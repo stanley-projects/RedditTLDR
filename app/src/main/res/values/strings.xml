@@ -20,7 +20,7 @@
     <string name="toast_no_api_key">Add your Claude API key in settings</string>
 
     <string name="settings_onboarding_title">Setup</string>
-    <string name="settings_onboarding_all_set">All set ✓</string>
+    <string name="settings_onboarding_all_set">All set</string>
     <string name="settings_permission_accessibility">Accessibility service</string>
     <string name="settings_permission_overlay">Display over other apps</string>
     <string name="settings_permission_notifications">Notifications</string>
@@ -30,7 +30,7 @@
     <string name="settings_open_overlay">Open Overlay Settings</string>
     <string name="settings_request_notifications">Enable Notifications</string>
     <string name="settings_api_key_title">Claude API key</string>
-    <string name="settings_api_key_placeholder">sk-ant-api03-…</string>
+    <string name="settings_api_key_placeholder">sk-ant-api03-...</string>
     <string name="settings_api_key_help">Get a key at console.anthropic.com</string>
     <string name="settings_api_key_save">Save</string>
     <string name="settings_api_key_test">Test</string>

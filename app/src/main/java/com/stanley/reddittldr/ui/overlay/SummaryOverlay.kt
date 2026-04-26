@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * The caller owns the WindowManager lifecycle via [attach] / [detach].
  *
  * If [onSummarizeComments] is non-null, the footer shows a "Summarize comments"
- * button. The fetch + Claude call only fire when the user taps it — no work
+ * button. The fetch + Claude call only fire when the user taps it - no work
  * is done up front. After it completes, the result is appended below the post
  * summary in the same scrollable area.
  */
@@ -111,7 +111,7 @@ class SummaryOverlay(
 
         // Inline comments section (hidden until populated).
         val commentsHeader = TextView(context).apply {
-            text = "—— Comments ——"
+            text = "Comments"
             setTextColor(context.getColor(R.color.text_primary))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
@@ -170,7 +170,7 @@ class SummaryOverlay(
             ).apply { topMargin = dp(8) }
         }
 
-        // "Summarize comments" — only added if a callback was provided.
+        // "Summarize comments" - only added if a callback was provided.
         var commentsBtn: Button? = null
         var commentsSpinner: ProgressBar? = null
         if (onSummarizeComments != null) {
@@ -202,7 +202,7 @@ class SummaryOverlay(
                 val toCopy = buildString {
                     append(summaryText)
                     commentsSummary?.let {
-                        append("\n\n—— Comments ——\n")
+                        append("\n\nComments\n")
                         append(it)
                     }
                 }
@@ -225,7 +225,7 @@ class SummaryOverlay(
         commentsBtn?.setOnClickListener {
             val cb = onSummarizeComments ?: return@setOnClickListener
             commentsBtn.isEnabled = false
-            commentsBtn.text = "Loading…"
+            commentsBtn.text = "Loading..."
             commentsSpinner?.visibility = View.VISIBLE
             coroutineScope.launch {
                 val result = cb()
@@ -237,7 +237,7 @@ class SummaryOverlay(
                         commentsBody.visibility = View.VISIBLE
                         commentsNote.text = "Summarized $count comment${if (count == 1) "" else "s"}"
                         commentsNote.visibility = View.VISIBLE
-                        // Button has done its job — remove it.
+                        // Button has done its job - remove it.
                         commentsBtn.visibility = View.GONE
                         commentsSpinner?.visibility = View.GONE
                         scroll.post { scroll.smoothScrollTo(0, commentsHeader.top) }

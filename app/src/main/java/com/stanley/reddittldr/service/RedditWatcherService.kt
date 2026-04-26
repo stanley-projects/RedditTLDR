@@ -46,7 +46,7 @@ class RedditWatcherService : AccessibilityService() {
 
         // Security: we only READ Reddit content. For other packages we only observe
         // the package name to toggle the bubble off.
-        if (pkg == REDDIT_PACKAGE) {
+        if (isRedditPackage(pkg)) {
             // Reset the dismiss flag only when crossing the boundary from another app
             // back into Reddit — not on every intra-Reddit navigation event.
             if (!lastWasReddit) {
@@ -84,11 +84,15 @@ class RedditWatcherService : AccessibilityService() {
         return try {
             windows?.any { w ->
                 val p = w.root?.packageName?.toString() ?: return@any false
-                p == REDDIT_PACKAGE || p.startsWith("com.reddit.")
+                isRedditPackage(p)
             } == true
         } catch (_: Exception) {
             false
         }
+    }
+
+    private fun isRedditPackage(pkg: String): Boolean {
+        return pkg == REDDIT_PACKAGE || pkg.startsWith("com.reddit.")
     }
 
     private fun startBubble() {

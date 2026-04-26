@@ -1,9 +1,9 @@
 package com.stanley.reddittldr.ui
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -38,7 +38,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -46,7 +45,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import android.content.Intent
 import com.stanley.reddittldr.R
 import com.stanley.reddittldr.api.ClaudeRepository
 import com.stanley.reddittldr.data.ClaudeModel
@@ -109,15 +107,19 @@ fun SettingsScreen(
                                 testState = TestState.Idle
                             },
                             placeholder = { Text(stringResource(R.string.settings_api_key_placeholder)) },
-                            visualTransformation = if (apiKeyVisible)
+                            visualTransformation = if (apiKeyVisible) {
                                 VisualTransformation.None
-                            else PasswordVisualTransformation(),
+                            } else {
+                                PasswordVisualTransformation()
+                            },
                             trailingIcon = {
                                 IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
                                     Icon(
-                                        imageVector = if (apiKeyVisible)
+                                        imageVector = if (apiKeyVisible) {
                                             Icons.Filled.VisibilityOff
-                                        else Icons.Filled.Visibility,
+                                        } else {
+                                            Icons.Filled.Visibility
+                                        },
                                         contentDescription = null
                                     )
                                 }
@@ -157,9 +159,9 @@ fun SettingsScreen(
                         Spacer(Modifier.height(8.dp))
                         when (val s = testState) {
                             TestState.Idle -> {}
-                            TestState.Testing -> Text("Testing…", color = Color.Gray)
+                            TestState.Testing -> Text("Testing...", color = Color.Gray)
                             TestState.Ok -> Text(
-                                "✓ ${stringResource(R.string.settings_api_key_ok)}",
+                                stringResource(R.string.settings_api_key_ok),
                                 color = Color(0xFF2E7D32)
                             )
                             is TestState.Error -> Text(s.message, color = Color(0xFFB71C1C))
@@ -259,7 +261,7 @@ fun SettingsScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Each tap of the bubble records what the app did — which extraction strategy ran, what was sent to Claude, errors. Share this back when something behaves wrong.",
+                            "Each tap of the bubble records what the app did - which extraction strategy ran, what was sent to Claude, and any errors. Share this back when something behaves wrong.",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray
                         )

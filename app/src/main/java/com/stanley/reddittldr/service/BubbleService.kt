@@ -79,10 +79,11 @@ class BubbleService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        startAsForeground()
         if (!Settings.canDrawOverlays(this)) {
+            stopSelf()
             return START_NOT_STICKY
         }
+        startAsForeground()
         showBubble()
         // Don't auto-restart: if we get killed, we'd come back over whatever app
         // the user is currently in, not necessarily Reddit. The watcher will fire
