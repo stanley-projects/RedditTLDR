@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    NOTE: android:packageNames is intentionally omitted.
+
+    We need to receive TYPE_WINDOW_STATE_CHANGED events from *all* apps so we can
+    detect when the user leaves Reddit and hide the bubble. Without this, we'd
+    never get an event when Reddit goes to the background and the overlay
+    would persist over other apps.
+
+    RedditWatcherService still only reads accessibility content when
+    event.packageName == com.reddit.frontpage — every other package's event is
+    used only to toggle the bubble off. We never call rootInActiveWindow or
+    traverse the node tree for any non-Reddit app.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/accessibility_service_description"
+    android:notificationTimeout="200"/>

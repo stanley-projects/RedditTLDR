@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RedditTLDR</string>
+    <string name="accessibility_service_label">RedditTLDR</string>
+    <string name="accessibility_service_description">Reads Reddit posts so RedditTLDR can summarize them. Only active while the Reddit app is open. No data is sent anywhere except your Claude API key provider when you tap the bubble.</string>
+
+    <string name="notification_channel_name">RedditTLDR bubble</string>
+    <string name="notification_channel_description">Keeps the floating summary bubble alive while Reddit is open.</string>
+    <string name="notification_title">RedditTLDR active on Reddit</string>
+    <string name="notification_text">Tap the bubble to summarize the current post.</string>
+    <string name="notification_action_stop">Stop</string>
+
+    <string name="summary_title">Summary</string>
+    <string name="summary_partial_banner">Summary based on partial content</string>
+    <string name="summary_copy">Copy</string>
+    <string name="summary_copied">Copied</string>
+    <string name="summary_close">Close</string>
+
+    <string name="toast_cant_read_post">Couldn\'t read post</string>
+    <string name="toast_no_api_key">Add your Claude API key in settings</string>
+
+    <string name="settings_onboarding_title">Setup</string>
+    <string name="settings_onboarding_all_set">All set ✓</string>
+    <string name="settings_permission_accessibility">Accessibility service</string>
+    <string name="settings_permission_overlay">Display over other apps</string>
+    <string name="settings_permission_notifications">Notifications</string>
+    <string name="settings_permission_granted">Granted</string>
+    <string name="settings_permission_not_granted">Not granted</string>
+    <string name="settings_open_accessibility">Open Accessibility Settings</string>
+    <string name="settings_open_overlay">Open Overlay Settings</string>
+    <string name="settings_request_notifications">Enable Notifications</string>
+    <string name="settings_api_key_title">Claude API key</string>
+    <string name="settings_api_key_placeholder">sk-ant-api03-…</string>
+    <string name="settings_api_key_help">Get a key at console.anthropic.com</string>
+    <string name="settings_api_key_save">Save</string>
+    <string name="settings_api_key_test">Test</string>
+    <string name="settings_api_key_ok">Key works</string>
+    <string name="settings_model_title">Model</string>
+    <string name="settings_model_haiku">Haiku 4.5 (fastest, cheapest)</string>
+    <string name="settings_model_sonnet">Sonnet 4.6 (balanced)</string>
+    <string name="settings_model_opus">Opus 4.7 (best quality)</string>
+    <string name="settings_length_title">Summary length</string>
+    <string name="settings_length_short">Short</string>
+    <string name="settings_length_medium">Medium</string>
+    <string name="settings_length_detailed">Detailed</string>
+    <string name="settings_footer_note">This app uses Reddit\'s public JSON endpoints. Be mindful of Reddit\'s API terms.</string>
+    <string name="settings_version_prefix">Version</string>
+</resources>

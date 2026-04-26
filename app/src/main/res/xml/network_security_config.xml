@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        Global policy: HTTPS only, system CAs only.
+        User-installed CAs are NOT trusted in release builds — prevents a user-added root
+        (corporate MDM, intercepting proxy) from MITMing api.anthropic.com and
+        extracting the Claude API key.
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- Debug builds may use user CAs (for Charles/Burp during development). -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

@@ -1,0 +1,48 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+.gradletasknamecache
+
+# Local environment — never commit
+local.properties
+*.env
+*.env.*
+
+# Signing / credentials — never commit
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+keystore.properties
+signing.properties
+google-services.json
+
+# Build artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+/captures/
+release/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Native
+.externalNativeBuild/
+.cxx/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
