@@ -161,3 +161,5 @@ Suggested note format:
 - [Codex] Unified Reddit package detection in `RedditWatcherService` by routing both event handling and foreground checks through one package-matching rule.
 - [Codex] Cleaned visible UI text in `strings.xml`, `SettingsScreen.kt`, and `SummaryOverlay.kt` to remove mojibake and keep the interface stable.
 - [Codex] Established the agent-tagged memory-file convention in this project so future work can show who changed what and why.
+- [Claude] Hardened `.gitignore` to cover `.kotlin/`, `**/build/`, `*.log`, all keystore types (`*.jks`, `*.keystore`, `*.p12`, `*.pem`, `*.key`, `keystore.properties`), `*.env`, and `google-services.json`. Original ignore only matched root-level `/build` and missed the Kotlin daemon cache.
+- [Claude] Initialized git repo and pushed to `https://github.com/stanley-projects/RedditTLDR` (private). Verified pre-push that `local.properties` is not staged and no hardcoded secrets exist anywhere in `app/src`. Default branch `main`.
