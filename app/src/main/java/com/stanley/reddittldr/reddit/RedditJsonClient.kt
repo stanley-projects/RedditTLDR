@@ -80,7 +80,7 @@ class RedditJsonClient {
      * "Summarize comments" action — only invoked when the user explicitly asks.
      * Skips deleted/removed/AutoModerator/short comments.
      */
-    suspend fun fetchComments(postId: String, limit: Int = 30): Result<List<Comment>> =
+    suspend fun fetchComments(postId: String, limit: Int = 30): Result<CommentsResult> =
         withContext(Dispatchers.IO) {
             try {
                 val url = "https://www.reddit.com/comments/$postId.json?raw_json=1&sort=top&limit=$limit"
@@ -98,9 +98,25 @@ class RedditJsonClient {
                     val body = resp.body?.string().orEmpty()
                     val root = json.parseToJsonElement(body) as? JsonArray
                         ?: return@withContext Result.failure(IOException("Unexpected response shape"))
+
+                    // listing[0] is the post; pull its real title so the UI can show
+                    // "Summarized N comments from: <title>". That makes a wrong-post
+                    // match immediately obvious instead of looking like hallucination.
+                    val postData = root.getOrNull(0)?.jsonObject
+                        ?.get("data")?.jsonObject
+                        ?.get("children")?.jsonArray
+                        ?.getOrNull(0)?.jsonObject
+                        ?.get("data")?.jsonObject
+                    val sourceTitle = postData?.get("title")?.jsonPrimitive?.contentOrNull
+                    val sourcePermalink = postData?.get("permalink")?.jsonPrimitive?.contentOrNull
+
                     val commentsListing = root.getOrNull(1)?.jsonObject
                     val children = commentsListing?.get("data")?.jsonObject?.get("children")?.jsonArray
-                        ?: return@withContext Result.success(emptyList())
+                    if (children == null) {
+                        return@withContext Result.success(
+                            CommentsResult(sourceTitle, sourcePermalink, emptyList())
+                        )
+                    }
                     val out = mutableListOf<Comment>()
                     for (child in children) {
                         val node = child.jsonObject
@@ -116,8 +132,14 @@ class RedditJsonClient {
                         if (text.length < 30) continue
                         out += Comment(author = author, body = text, score = score)
                     }
-                    DebugLog.logKv("redditJson", "comments-kept" to out.size)
-                    Result.success(out.sortedByDescending { it.score })
+                    val sorted = out.sortedByDescending { it.score }
+                    DebugLog.logKv(
+                        "redditJson",
+                        "comments-kept" to sorted.size,
+                        "sourceTitle" to (sourceTitle?.take(80) ?: "<none>"),
+                        "topComment" to "\"${DebugLog.snippet(sorted.firstOrNull()?.body ?: "<none>", 120)}\""
+                    )
+                    Result.success(CommentsResult(sourceTitle, sourcePermalink, sorted))
                 }
             } catch (e: IOException) {
                 Result.failure(e)
@@ -165,7 +187,10 @@ class RedditJsonClient {
                         }
                     }
                     DebugLog.logKv("redditJson", "search-best" to (bestId ?: "<none>"), "score" to bestScore)
-                    if (bestId != null && bestScore >= 60) {
+                    // 75 = at least 3-of-4 significant words overlap. 60 was too
+                    // loose — small subs have many similar-titled posts and we'd
+                    // happily summarize comments from the wrong one.
+                    if (bestId != null && bestScore >= 75) {
                         Result.success(bestId)
                     } else {
                         Result.failure(IOException("No good title match (best=$bestScore)"))
@@ -203,6 +228,12 @@ class RedditJsonClient {
         val author: String,
         val body: String,
         val score: Int
+    )
+
+    data class CommentsResult(
+        val sourceTitle: String?,
+        val sourcePermalink: String?,
+        val comments: List<Comment>
     )
 
     companion object {

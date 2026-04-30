@@ -1,30 +1,54 @@
 package com.stanley.reddittldr.reddit
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
+import android.graphics.Path
 import android.graphics.Rect
+import android.os.Handler
+import android.os.Looper
 import android.view.accessibility.AccessibilityNodeInfo
 import com.stanley.reddittldr.util.DebugLog
+import kotlin.coroutines.resume
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Read the currently visible Reddit post off the screen.
  *
- * Single strategy: walk the Reddit app's accessibility windows (Reddit splits
- * its UI across multiple sibling windows — toolbar overlay, body container,
- * comment sheet, etc.), collect every text node whose bounds are inside the
- * viewport, scroll down a few times if we haven't reached the comments
- * section yet, scroll back up, return.
+ * The flow on every bubble tap:
  *
- * No web requests, no fallbacks. The accessibility tree is the source of truth.
+ *   1. Walk to the top of the post.   Up to MAX_UP_SCROLLS swipes — stops
+ *      when the page won't move further (we've reached the top) or the cap
+ *      is hit (safety net for an accidental tap on a feed where there is no
+ *      "top of post"). No content is captured during this phase, only
+ *      positioning.
+ *
+ *   2. Read forward, capturing each visible chunk.   Up to MAX_DOWN_SCROLLS
+ *      swipes — stops when the page won't move further or the cap is hit.
+ *      Everything visible is captured: the post body AND the comment section
+ *      that follows it. We do NOT stop at the comment-section boundary; the
+ *      whole pass is meant to grab comments too so the comment summarizer
+ *      doesn't need a separate fetch.
+ *
+ *   3. Split the captured set into body + comments at the first comment
+ *      marker ("Sort by:", "Be the first to comment", etc.).
+ *
+ * No web requests, no fallbacks. The accessibility tree is the source of
+ * truth for both the body and the comments.
  */
 class PostExtractor(private val service: AccessibilityService) {
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    private enum class Direction { UP, DOWN }
 
     suspend fun extract(): PostContent = coroutineScope {
         val roots = redditRoots()
         if (roots.isEmpty()) {
-            DebugLog.log("extract", "no Reddit windows found — aborting")
+            DebugLog.log("extract", "no Reddit windows found - aborting")
             return@coroutineScope failed()
         }
         DebugLog.logKv(
@@ -34,9 +58,6 @@ class PostExtractor(private val service: AccessibilityService) {
         )
 
         val postId = findPostIdAcross(roots)
-        // NOTE: subreddit is detected during the screen read, where we have
-        // top-to-bottom order — the first "r/<sub>" line is the post's own
-        // subreddit. A flat regex over the whole tree picked up sidebar promos.
         DebugLog.logKv("extract", "postId" to (postId ?: "<none>"))
 
         readFromScreen(postId)
@@ -44,9 +65,7 @@ class PostExtractor(private val service: AccessibilityService) {
 
     /**
      * All Reddit-app accessibility windows. Reddit's modern UI is laid out
-     * across several sibling windows; reading just one (e.g. the toolbar
-     * overlay) gives 4 lines of chrome. We walk the whole set as a single
-     * logical tree.
+     * across several sibling windows; reading just one gives mostly chrome.
      */
     private fun redditRoots(): List<AccessibilityNodeInfo> = try {
         service.windows
@@ -61,23 +80,28 @@ class PostExtractor(private val service: AccessibilityService) {
         emptyList()
     }
 
-    /** Read everything visible across all Reddit windows; scroll down to capture more
-     *  if the comments boundary is still off-screen; scroll back; assemble title + body. */
     private suspend fun readFromScreen(postId: String?): PostContent = coroutineScope {
+        // Phase 1: walk to the top of the post. Capped — if the user
+        // accidentally tapped on a feed (no post top to find), we don't
+        // scroll the feed forever.
+        var upScrolls = 0
+        while (isActive && upScrolls < MAX_UP_SCROLLS) {
+            if (!scrollOneStep(Direction.UP)) break
+            upScrolls++
+        }
+        DebugLog.logKv("read", "phase" to "afterUp", "upScrolls" to upScrolls)
+
+        // Phase 2: read forward, capturing every visible chunk including the
+        // comments below the body. Capped — for very long posts or comment
+        // threads we stop after MAX_DOWN_SCROLLS swipes. linkedSetOf gives us
+        // de-duplication while preserving the order lines first appear, which
+        // (because we always read from the top down) matches visual order.
         val ordered = linkedSetOf<String>()
-        var hitComments = false
         var headingTitle: String? = null
 
         fun mergeOnce() {
             val visible = collectVisibleTextAcross(redditRoots())
             for (vt in visible) {
-                // Only honor comment markers AFTER we've captured at least some real body text —
-                // Reddit's toolbar shows "Comments" on every screen, and tripping on it before
-                // any body is collected throws away the post entirely.
-                if (ordered.size >= MIN_LINES_BEFORE_COMMENT_STOP && looksLikeCommentMarker(vt.text)) {
-                    hitComments = true
-                    return
-                }
                 if (headingTitle == null && vt.isHeading &&
                     vt.text.length in 10..300 && !looksLikeChrome(vt.text)
                 ) {
@@ -88,54 +112,40 @@ class PostExtractor(private val service: AccessibilityService) {
         }
 
         mergeOnce()
-        DebugLog.logKv("read", "initialLines" to ordered.size, "hitComments" to hitComments)
+        DebugLog.logKv("read", "phase" to "initialAtTop", "lines" to ordered.size)
 
-        val scrollDownId = AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN.id
-        val scrollUpId = AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_UP.id
-
-        var forwardCount = 0
-        while (isActive && forwardCount < MAX_SCROLL_ITERATIONS && !hitComments) {
-            val scrollable = findScrollableAcross(redditRoots()) ?: break
-            val sizeBefore = ordered.size
-            val ok = scrollable.performAction(scrollDownId, null)
-            if (!ok) break
-            forwardCount++
-            delay(SCROLL_WAIT_MS)
+        var downScrolls = 0
+        while (isActive && downScrolls < MAX_DOWN_SCROLLS) {
+            if (!scrollOneStep(Direction.DOWN)) break
+            downScrolls++
             mergeOnce()
-            // No new lines AND no comments boundary → we've hit the bottom.
-            if (ordered.size == sizeBefore && !hitComments) break
         }
         DebugLog.logKv(
             "read",
-            "forwardScrolls" to forwardCount,
-            "totalLines" to ordered.size,
-            "hitComments" to hitComments
+            "phase" to "afterDown",
+            "downScrolls" to downScrolls,
+            "lines" to ordered.size
         )
 
-        // Restore the user's scroll position.
-        repeat(forwardCount) {
-            val back = findScrollableAcross(redditRoots()) ?: return@repeat
-            back.performAction(scrollUpId, null)
-            delay(SCROLL_WAIT_MS)
-        }
-
-        val title = headingTitle ?: pickTitleFromOrdered(ordered)
-        // Subreddit = the FIRST "r/<sub>" we saw in top-to-bottom order. Reddit's
-        // post screen puts the subreddit header right above the title. A flat
-        // regex over the whole tree picks up sidebar promos ("r/unsloth" on a
-        // r/DigitalIncomePath post) — the ordering filter prevents that.
-        val subreddit = ordered
+        // Phase 3: build a single captured-content blob. We do NOT split body
+        // from comments at extraction time — Reddit's comment-section header
+        // text varies between app versions and a missed split silently breaks
+        // the post summary (mixing comments in) or hides the comments button.
+        // Claude does the differentiation via prompt instructions when each
+        // summary is requested.
+        val orderedList = ordered.toList()
+        val title = headingTitle ?: pickTitleFromOrdered(orderedList)
+        val subreddit = orderedList
             .asSequence()
             .mapNotNull { SUBREDDIT_PATTERN.find(it)?.groupValues?.getOrNull(1) }
             .firstOrNull()
 
-        val body = ordered
+        val body = orderedList
             .asSequence()
             .filter { it != title }
             .filterNot { looksLikeChrome(it) }
             .filterNot { it.startsWith("r/") || it.startsWith("u/") }
             .filter { it.length >= MIN_LINE_LEN }
-            .toList()
             .distinct()
             .joinToString("\n\n")
 
@@ -146,20 +156,18 @@ class PostExtractor(private val service: AccessibilityService) {
                 "bodyLen" to body.length,
                 "title" to (title?.take(60) ?: "<none>"),
                 "lines" to ordered.size,
-                "linesSnippet" to "\"${DebugLog.snippet(ordered.joinToString(" | "), 240)}\""
+                "bodySnippet" to "\"${DebugLog.snippet(body, 240)}\""
             )
             return@coroutineScope failed()
         }
 
-        val isPartial = !hitComments && forwardCount >= MAX_SCROLL_ITERATIONS
         DebugLog.logKv(
             "read",
             "result" to "SUCCESS",
             "title" to (title?.take(60) ?: "<none>"),
             "subreddit" to (subreddit ?: "<none>"),
             "bodyLen" to body.length,
-            "isPartial" to isPartial,
-            "snippet" to "\"${DebugLog.snippet(body)}\""
+            "snippet" to "\"${DebugLog.snippet(body, 400)}\""
         )
 
         PostContent(
@@ -168,11 +176,41 @@ class PostExtractor(private val service: AccessibilityService) {
             sourceUrl = null,
             postId = postId,
             subreddit = subreddit,
-            extractionMethod = if (forwardCount == 0) ExtractionMethod.SCREEN else ExtractionMethod.SCREEN_SCROLLED,
-            isPartial = isPartial,
+            extractionMethod = if (downScrolls == 0 && upScrolls == 0) {
+                ExtractionMethod.SCREEN
+            } else {
+                ExtractionMethod.SCREEN_SCROLLED
+            },
+            // We hit the down-scroll cap, so we may not have reached the end
+            // of the page. Surfaced as a "partial content" banner on the card.
+            isPartial = downScrolls >= MAX_DOWN_SCROLLS,
             linesCaptured = ordered.size,
-            forwardScrolls = forwardCount
+            forwardScrolls = downScrolls
         )
+    }
+
+    /**
+     * The single scroll primitive. Dispatches a controlled-distance swipe and
+     * verifies the page actually moved by comparing visible-text fingerprints
+     * before and after. Returns true only if the fingerprint changed.
+     */
+    private suspend fun scrollOneStep(direction: Direction): Boolean {
+        val before = visibleFingerprint(redditRoots())
+        val dispatched = dispatchSwipe(direction)
+        if (!dispatched) {
+            DebugLog.logKv("scroll", "direction" to direction.name, "dispatched" to false)
+            return false
+        }
+        delay(SCROLL_WAIT_MS)
+        var after = visibleFingerprint(redditRoots())
+        if (after == before) {
+            // Lazy-list hydration sometimes lags; give it one more beat.
+            delay(EXTRA_SCROLL_SETTLE_MS)
+            after = visibleFingerprint(redditRoots())
+        }
+        val moved = after != before
+        DebugLog.logKv("scroll", "direction" to direction.name, "moved" to moved)
+        return moved
     }
 
     /**
@@ -197,20 +235,29 @@ class PostExtractor(private val service: AccessibilityService) {
             }
         }
         out.sortBy { it.top }
-        // De-dup identical text appearing in multiple Reddit windows at similar positions.
         val seen = HashSet<String>()
         return out.filter { seen.add(it.text) }
     }
 
-    private fun pickTitleFromOrdered(ordered: Set<String>): String? {
-        val list = ordered.toList()
-        val subAt = list.indexOfFirst { it.startsWith("r/") }
-        val after = if (subAt >= 0) list.drop(subAt + 1) else list
+    /**
+     * Cheap stable hash of the currently visible text set. The scroll primitive
+     * uses this to confirm the page actually moved between attempts.
+     */
+    private fun visibleFingerprint(roots: List<AccessibilityNodeInfo>): Int {
+        val visible = collectVisibleTextAcross(roots)
+        var h = 1
+        for (vt in visible) h = 31 * h + vt.text.hashCode()
+        return h
+    }
+
+    private fun pickTitleFromOrdered(ordered: List<String>): String? {
+        val subAt = ordered.indexOfFirst { it.startsWith("r/") }
+        val after = if (subAt >= 0) ordered.drop(subAt + 1) else ordered
         return after.firstOrNull {
             it.length in 15..300 &&
-                    !looksLikeChrome(it) &&
-                    !it.startsWith("u/") &&
-                    !it.startsWith("r/")
+                !looksLikeChrome(it) &&
+                !it.startsWith("u/") &&
+                !it.startsWith("r/")
         }
     }
 
@@ -232,38 +279,57 @@ class PostExtractor(private val service: AccessibilityService) {
     }
 
     /**
-     * Pick the largest scrollable that explicitly advertises ACTION_SCROLL_DOWN
-     * across all Reddit windows. Filtering on SCROLL_DOWN keeps us vertical and
-     * ignores Reddit's swipe-between-posts horizontal pager.
+     * Dispatch a vertical swipe gesture in the screen-center column. Returns
+     * true only when the system reports the gesture as completed. Capped at
+     * GESTURE_TIMEOUT_MS so a misconfigured `canPerformGestures` or a
+     * transient state where the system drops the gesture can't hang the
+     * whole extraction.
      */
-    private fun findScrollableAcross(roots: List<AccessibilityNodeInfo>): AccessibilityNodeInfo? {
-        val scrollDownId = AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_DOWN.id
-        var best: AccessibilityNodeInfo? = null
-        var bestArea = 0L
-        val rect = Rect()
-        for (root in roots) {
-            walk(root) { node ->
-                if (!node.isScrollable) return@walk
-                if (node.actionList.none { it.id == scrollDownId }) return@walk
-                node.getBoundsInScreen(rect)
-                val area = rect.width().toLong() * rect.height().toLong()
-                if (area > bestArea) {
-                    bestArea = area
-                    best = node
+    private suspend fun dispatchSwipe(direction: Direction): Boolean {
+        val metrics = service.resources.displayMetrics
+        val cx = metrics.widthPixels / 2f
+        val h = metrics.heightPixels.toFloat()
+        // ~50% of viewport per step. Finger drags UP (yStart > yEnd) to scroll
+        // the page DOWN, revealing content below the current view.
+        val (yStart, yEnd) = if (direction == Direction.DOWN) {
+            h * 0.78f to h * 0.28f
+        } else {
+            h * 0.28f to h * 0.78f
+        }
+        val path = Path().apply {
+            moveTo(cx, yStart)
+            lineTo(cx, yEnd)
+        }
+        val stroke = GestureDescription.StrokeDescription(path, 0L, GESTURE_DURATION_MS)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+
+        val result = withTimeoutOrNull(GESTURE_TIMEOUT_MS) {
+            suspendCancellableCoroutine { cont ->
+                val callback = object : AccessibilityService.GestureResultCallback() {
+                    override fun onCompleted(g: GestureDescription?) {
+                        if (!cont.isCompleted) cont.resume(true)
+                    }
+                    override fun onCancelled(g: GestureDescription?) {
+                        if (!cont.isCompleted) cont.resume(false)
+                    }
                 }
+                val dispatched = try {
+                    service.dispatchGesture(gesture, callback, mainHandler)
+                } catch (e: Exception) {
+                    DebugLog.logKv("swipe", "exception" to (e.message ?: e.javaClass.simpleName))
+                    false
+                }
+                if (!dispatched && !cont.isCompleted) cont.resume(false)
             }
         }
-        return best
+        if (result == null) {
+            DebugLog.log("swipe", "timeout - callback never fired")
+            return false
+        }
+        return result
     }
 
-    private fun looksLikeCommentMarker(text: String): Boolean {
-        val lower = text.trim().lowercase()
-        if (lower.isEmpty()) return false
-        return COMMENT_MARKERS.any { lower == it || lower.startsWith(it) }
-    }
-
-    /** Chrome detection — only flags SHORT lines. Substring matches inside long prose
-     *  ("subscription" containing "subscribe") were eating real titles. */
+    /** Chrome detection - only flags short lines. */
     private fun looksLikeChrome(text: String): Boolean {
         val trimmed = text.trim()
         if (trimmed.length < 6) return true
@@ -303,13 +369,18 @@ class PostExtractor(private val service: AccessibilityService) {
 
         private const val MIN_BODY_LEN = 200
         private const val MIN_LINE_LEN = 8
-        private const val MAX_SCROLL_ITERATIONS = 12
-        private const val SCROLL_WAIT_MS = 300L
 
-        /** Don't honour a comments boundary until we've seen this many lines —
-         *  the toolbar shows "Comments" everywhere, and we'd otherwise stop before
-         *  the post body has even rendered. */
-        private const val MIN_LINES_BEFORE_COMMENT_STOP = 8
+        // Hard caps chosen by spec: stop runaway scrolling on accidental taps
+        // (e.g. on the feed, where there is no "top of post" / "end of post").
+        // Most real posts should hit a natural stop (page can't move) well
+        // before either limit.
+        private const val MAX_UP_SCROLLS = 5
+        private const val MAX_DOWN_SCROLLS = 6
+
+        private const val SCROLL_WAIT_MS = 500L
+        private const val EXTRA_SCROLL_SETTLE_MS = 500L
+        private const val GESTURE_DURATION_MS = 500L
+        private const val GESTURE_TIMEOUT_MS = 3000L
 
         private val SUBREDDIT_PATTERN = Regex("""\br/([A-Za-z0-9_]{3,21})\b""")
 
@@ -322,28 +393,11 @@ class PostExtractor(private val service: AccessibilityService) {
 
         private val CHROME_KEYWORD_REGEX = Regex(
             """\b(upvote|downvote|share|save|reply|comment|comments|posted by|joined|""" +
-                    """members online|subscribe|subscribed|award|crosspost|hide|report|""" +
-                    """follow|following|more options|back button|join the conversation|""" +
-                    """add a comment|sort by|view all comments)\b"""
+                """members online|subscribe|subscribed|award|crosspost|hide|report|""" +
+                """follow|following|more options|back button|join the conversation|""" +
+                """add a comment|sort by|view all comments)\b"""
         )
         private val RELATIVE_TIME_REGEX = Regex("""^\d+\s?(s|sec|m|min|h|hr|d|w|mo|y)$""")
         private val VOTE_COUNT_REGEX = Regex("""^[\d.]+[kKmM]?$""")
-
-        /** Lines that ONLY appear at the actual comments-section boundary.
-         *
-         *  Excluded on purpose:
-         *  - "comments" — toolbar button, on every screen
-         *  - "join the conversation" — sticky comment-input bar, always visible
-         *  - "add a comment" — same sticky bar variant
-         *  - "view all comments" — feed-card link, not a post-screen boundary
-         *
-         *  These were causing the extractor to declare "we hit comments" on the very
-         *  first read, before the post body had even rendered, so it never scrolled. */
-        private val COMMENT_MARKERS = listOf(
-            "sort by:",
-            "sort comments",
-            "be the first to comment",
-            "no comments yet"
-        )
     }
 }

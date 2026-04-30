@@ -72,29 +72,25 @@ class ClaudeRepository(private val settings: SettingsRepository) {
     }
 
     suspend fun summarizeComments(
-        comments: List<RedditJsonClient.Comment>,
+        capturedText: String,
         postTitle: String?
     ): Result<String> = withContext(Dispatchers.IO) {
         val apiKey = settings.apiKey
         if (apiKey.isBlank()) {
             return@withContext Result.failure(IllegalStateException("No API key set."))
         }
-        if (comments.isEmpty()) {
-            return@withContext Result.failure(IOException("No usable comments found."))
+        if (capturedText.isBlank()) {
+            return@withContext Result.failure(IOException("No content captured."))
         }
         val joined = buildString {
             postTitle?.takeIf { it.isNotBlank() }?.let {
                 append("Post title: ").append(it).append("\n\n")
             }
-            append("Top comments (sorted by score):\n\n")
-            var budget = MAX_COMMENT_CHARS
-            for ((idx, c) in comments.withIndex()) {
-                val entry = "[${c.score} pts] ${c.body}\n\n"
-                if (entry.length > budget) break
-                append(entry)
-                budget -= entry.length
-                if (idx >= 24) break
-            }
+            append("Captured screen content from a Reddit post (the post body ")
+            append("followed by the comment section if any was present). Focus on ")
+            append("the COMMENTS — what people are saying in the discussion below ")
+            append("the post — NOT what the original poster wrote:\n\n")
+            append(capturedText.take(MAX_COMMENT_CHARS))
         }
         val requestBody = ClaudeRequest(
             model = settings.model.apiId,
@@ -105,7 +101,7 @@ class ClaudeRepository(private val settings: SettingsRepository) {
         DebugLog.logKv(
             "claude-comments",
             "model" to settings.model.apiId,
-            "commentCount" to comments.size,
+            "capturedTextLen" to capturedText.length,
             "userContentLen" to joined.length
         )
         callClaude(apiKey, requestBody).mapCatching { response ->
@@ -174,13 +170,25 @@ class ClaudeRepository(private val settings: SettingsRepository) {
         }
     }
 
-    private fun systemPromptFor(length: SummaryLength): String = when (length) {
-        SummaryLength.SHORT ->
-            "Summarize this Reddit post in 1-2 sentences. Lead with the core point. No preamble."
-        SummaryLength.MEDIUM ->
-            "Summarize this Reddit post. One-sentence TL;DR, then 3-4 bullets with key details. No preamble, no throat-clearing."
-        SummaryLength.DETAILED ->
-            "Summarize this Reddit post thoroughly. Start with a one-sentence TL;DR. Then give 5-7 bullets covering context, main points, any key details or caveats. Skip preamble."
+    private fun systemPromptFor(length: SummaryLength): String {
+        // Every captured input may include comment-section text after the
+        // post body — make this rule loud so it doesn't bleed into the
+        // summary. The user gets comments separately by tapping the
+        // "Summarize comments" button on the card.
+        val ignoreCommentsRule =
+            "The input is text captured directly from the user's screen and " +
+                "will likely include comment-section content from other Reddit " +
+                "users after the post body. IGNORE the comment-section content " +
+                "entirely and summarize ONLY what the original poster (OP) wrote " +
+                "in the post body itself. "
+        return when (length) {
+            SummaryLength.SHORT ->
+                "${ignoreCommentsRule}Summarize the post in 1-2 sentences. Lead with the core point. No preamble."
+            SummaryLength.MEDIUM ->
+                "${ignoreCommentsRule}Summarize the post. One-sentence TL;DR, then 3-4 bullets with key details. No preamble, no throat-clearing."
+            SummaryLength.DETAILED ->
+                "${ignoreCommentsRule}Summarize the post thoroughly. Start with a one-sentence TL;DR. Then give 5-7 bullets covering context, main points, any key details or caveats. Skip preamble."
+        }
     }
 
     companion object {
@@ -188,9 +196,16 @@ class ClaudeRepository(private val settings: SettingsRepository) {
         private val JSON_MEDIA = "application/json; charset=utf-8".toMediaType()
         private const val MAX_COMMENT_CHARS = 12_000
         private const val COMMENTS_SYSTEM_PROMPT =
-            "You are summarizing the discussion in a Reddit comment thread. " +
-                "Lead with one sentence on the overall sentiment / consensus. Then 4-6 bullets covering " +
-                "the main themes, common opinions, notable disagreements, and any especially upvoted takes. " +
-                "Be specific about what people are actually saying — not generic. Skip preamble."
+            "You are summarizing the comment-section discussion of a Reddit post. " +
+                "The input is captured screen text that begins with the post body and " +
+                "is followed by the comments — focus ONLY on the COMMENTS, not on " +
+                "what the original poster wrote. Lead with one sentence on the overall " +
+                "sentiment / consensus among commenters. Then 3-6 bullets covering distinct " +
+                "themes, opinions, or notable disagreements you actually see in the comments. " +
+                "If a particular comment seems especially substantive or upvoted, point to it " +
+                "directly with a short paraphrase or quote. Stick strictly to what is in the " +
+                "input — do not invent opinions. If the captured content has no comments " +
+                "(e.g., the post had zero comments, or only the body was captured before the " +
+                "scroll cap), say plainly that there are no comments to summarize. Skip preamble."
     }
 }

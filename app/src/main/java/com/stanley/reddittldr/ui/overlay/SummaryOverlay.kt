@@ -29,6 +29,12 @@ import kotlinx.coroutines.launch
  * is done up front. After it completes, the result is appended below the post
  * summary in the same scrollable area.
  */
+data class CommentsSummaryResult(
+    val summary: String,
+    val count: Int,
+    val sourcePostTitle: String?
+)
+
 class SummaryOverlay(
     private val context: Context,
     private val windowManager: WindowManager,
@@ -36,7 +42,7 @@ class SummaryOverlay(
     private val summaryText: String,
     private val isPartial: Boolean,
     private val captureNote: String?,
-    private val onSummarizeComments: (suspend () -> Result<Pair<String, Int>>)?,
+    private val onSummarizeComments: (suspend () -> Result<CommentsSummaryResult>)?,
     private val onDismiss: () -> Unit
 ) {
 
@@ -230,12 +236,12 @@ class SummaryOverlay(
             coroutineScope.launch {
                 val result = cb()
                 result.fold(
-                    onSuccess = { (summary, count) ->
-                        commentsSummary = summary
-                        commentsBody.text = summary
+                    onSuccess = { res ->
+                        commentsSummary = res.summary
+                        commentsBody.text = res.summary
                         commentsHeader.visibility = View.VISIBLE
                         commentsBody.visibility = View.VISIBLE
-                        commentsNote.text = "Summarized $count comment${if (count == 1) "" else "s"}"
+                        commentsNote.text = "Comments summary"
                         commentsNote.visibility = View.VISIBLE
                         // Button has done its job - remove it.
                         commentsBtn.visibility = View.GONE

@@ -2,6 +2,14 @@ package com.stanley.reddittldr.reddit
 
 data class PostContent(
     val title: String?,
+    /**
+     * The full captured screen content — post body and (usually) the comment
+     * section that follows. We deliberately don't split the two at extraction
+     * time: Reddit's comment-section header text varies between app versions
+     * and a missed split silently corrupts the body summary or hides the
+     * comments button. Instead we send this whole blob to Claude for both
+     * summarize calls, and the prompts tell the model which part to focus on.
+     */
     val body: String,
     val sourceUrl: String?,
     val postId: String?,

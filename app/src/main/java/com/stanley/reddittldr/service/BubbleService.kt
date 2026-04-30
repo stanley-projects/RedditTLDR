@@ -32,6 +32,7 @@ import com.stanley.reddittldr.reddit.ExtractionMethod
 import com.stanley.reddittldr.reddit.PostContent
 import com.stanley.reddittldr.reddit.RedditJsonClient
 import com.stanley.reddittldr.ui.overlay.BubbleView
+import com.stanley.reddittldr.ui.overlay.CommentsSummaryResult
 import com.stanley.reddittldr.ui.overlay.DismissScrimView
 import com.stanley.reddittldr.ui.overlay.DismissTargetView
 import com.stanley.reddittldr.ui.overlay.SummaryOverlay
@@ -404,6 +405,12 @@ class BubbleService : Service() {
 
         DebugLog.startSession("bubble tap")
         bv.setLoading(true)
+        // The bubble window is touchable (drag/tap handlers). If the user has
+        // moved it anywhere along the vertical column where PostExtractor
+        // dispatches its swipe gestures, the bubble absorbs the touch and the
+        // gesture never reaches Reddit. Make the bubble non-touchable for the
+        // duration of the extraction so dispatched gestures pass through.
+        setBubbleTouchable(false)
         currentJob = scope.launch {
             try {
                 val svc = RedditWatcherService.instance
@@ -446,42 +453,45 @@ class BubbleService : Service() {
                 DebugLog.finishCurrent("FAIL: exception — ${e.message ?: e.javaClass.simpleName}")
                 bv.setLoading(false)
                 Toast.makeText(this@BubbleService, e.message ?: "Error", Toast.LENGTH_LONG).show()
+            } finally {
+                setBubbleTouchable(true)
             }
         }
     }
 
+    private fun setBubbleTouchable(touchable: Boolean) {
+        val view = bubbleView ?: return
+        val params = bubbleParams ?: return
+        val flagBefore = params.flags
+        params.flags = if (touchable) {
+            params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        } else {
+            params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        }
+        if (params.flags == flagBefore) return
+        try { windowManager.updateViewLayout(view, params) } catch (_: Exception) {}
+    }
+
     private fun failWithToast(resId: Int) {
         bubbleView?.setLoading(false)
+        setBubbleTouchable(true)
         Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
     }
 
     private fun showSummary(summary: String, post: PostContent) {
         bubbleView?.setLoading(false)
-        // Comments are offered when we have either a direct postId from the
-        // accessibility tree, or a subreddit + title we can search with. Subreddit
-        // detection now reads the first "r/<sub>" in top-to-bottom visible order,
-        // so it points at the actual post — not a sidebar promo.
-        val canSummarizeComments = post.postId != null ||
-                (post.subreddit != null && (post.title?.length ?: 0) >= 10)
-        val commentCb: (suspend () -> Result<Pair<String, Int>>)? = if (!canSummarizeComments) null else {
+        // We don't split body from comments at extraction time — we send the
+        // whole captured blob to Claude both times and let the prompts choose.
+        // Show the comments button whenever we captured a non-trivial amount
+        // of content. When the user taps it, Claude either summarizes the
+        // discussion or says plainly that there's nothing to summarize.
+        val commentCb: (suspend () -> Result<CommentsSummaryResult>)? = if (post.body.length < COMMENTS_BUTTON_MIN_BODY_LEN) null else {
             {
-                val resolvedId = post.postId ?: run {
-                    val sub = post.subreddit
-                    val t = post.title
-                    if (sub != null && t != null) {
-                        redditJson.searchPostId(sub, t).getOrNull()
-                    } else null
-                }
-                if (resolvedId == null) {
-                    Result.failure(Exception("Couldn't identify the post for comments."))
-                } else {
-                    val fetched = redditJson.fetchComments(resolvedId)
-                    fetched.fold(
-                        onSuccess = { list ->
-                            if (list.isEmpty()) Result.failure(Exception("No usable comments found."))
-                            else claude.summarizeComments(list, post.title).map { it to list.size }
-                        },
-                        onFailure = { Result.failure(it) }
+                claude.summarizeComments(post.body, post.title).map { summary ->
+                    CommentsSummaryResult(
+                        summary = summary,
+                        count = 0,
+                        sourcePostTitle = post.title
                     )
                 }
             }
@@ -581,5 +591,8 @@ class BubbleService : Service() {
         // tab bars even on devices with three-button navigation.
         private const val TARGET_CENTER_FROM_BOTTOM_DP = 128
         private const val SCRIM_HEIGHT_DP_INT = 280
+        // Below this captured-content length we don't even offer the
+        // comments button — too short to have useful comments captured.
+        private const val COMMENTS_BUTTON_MIN_BODY_LEN = 500
     }
 }
