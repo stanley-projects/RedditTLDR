@@ -1,0 +1,69 @@
+# RedditTLDR
+
+> Android app that draws a floating bubble over the Reddit app. Tap the bubble while
+> reading any post → the app captures the post text via AccessibilityService, sends it
+> to the Anthropic Claude API, and displays a summary card as an overlay — without
+> leaving Reddit.
+
+## Purpose
+
+RedditTLDR solves a simple problem: Reddit posts are long. The app gives you a
+1–7 bullet summary in ~3 seconds, directly on top of the Reddit app. No app switching,
+no copy-paste, no browser extension.
+
+## How to use (end-user)
+
+1. Install the APK (Android 8.0+, official Reddit app required)
+2. Grant Accessibility + overlay permissions
+3. Enter an Anthropic API key in Settings
+4. Open Reddit — bubble appears automatically
+5. Tap the bubble on any post to get a summary
+6. Optionally tap "Summarize comments" to also summarize the comment thread
+
+## How it works (technical)
+
+- **Extraction:** `PostExtractor.kt` dispatches swipe gestures via `AccessibilityService.dispatchGesture()` to scroll the Reddit post (up to 5 scrolls up to reach top, 6 scrolls down). After each swipe it reads the accessibility tree, collects visible text nodes intersecting the viewport, and deduplicates using a `LinkedHashSet`. A fingerprint hash (rolling polynomial over text hashes) detects whether the page actually moved.
+
+- **Summarization:** `ClaudeRepository.kt` sends the captured text to `https://api.anthropic.com/v1/messages`. The post-summary system prompt explicitly tells the model to ignore any comment-section text that follows the post body. The comments-summary prompt focuses on the discussion. Both calls use the same captured blob — no second network round-trip for comments.
+
+- **Overlay:** `SummaryOverlay.kt` builds the card as classic Android Views (not Compose) because Compose composables do not render inside `TYPE_APPLICATION_OVERLAY` windows.
+
+- **Bubble:** `BubbleService.kt` is a foreground service that owns all overlay windows. During extraction, the bubble is set `FLAG_NOT_TOUCHABLE` so dispatched gestures pass through to Reddit instead of being absorbed by the bubble's own touch handlers.
+
+## Tech stack
+
+- Language: Kotlin
+- Min SDK: 26 (Android 8.0)
+- Target SDK: 34 (Android 14)
+- UI: Jetpack Compose (settings), classic Views (overlay — Compose incompatible with TYPE_APPLICATION_OVERLAY)
+- HTTP: OkHttp
+- Serialization: kotlinx.serialization
+- Security: EncryptedSharedPreferences (AES-256-GCM), FLAG_SECURE, network_security_config
+- AI: Anthropic Messages API — default model claude-haiku-4-5-20251001
+- Build: Gradle Kotlin DSL + version catalog, requires JBR from Android Studio
+
+## Key source files
+
+- `app/src/main/java/com/stanley/reddittldr/reddit/PostExtractor.kt` — scroll-and-capture engine
+- `app/src/main/java/com/stanley/reddittldr/service/BubbleService.kt` — floating bubble lifecycle
+- `app/src/main/java/com/stanley/reddittldr/service/RedditWatcherService.kt` — AccessibilityService entry point
+- `app/src/main/java/com/stanley/reddittldr/api/ClaudeRepository.kt` — Anthropic API calls
+- `app/src/main/java/com/stanley/reddittldr/ui/overlay/SummaryOverlay.kt` — summary card UI
+- `app/src/main/res/xml/accessibility_service_config.xml` — requires `canPerformGestures="true"`
+
+## Important implementation notes for AI agents
+
+- `android:canPerformGestures="true"` must be in `accessibility_service_config.xml` — without it, `dispatchGesture` is silently no-oped (callback never fires, coroutine hangs)
+- `dispatchGesture` must receive a `Handler(Looper.getMainLooper())` as the third argument when called from a background coroutine (`Dispatchers.Default`), otherwise the callback is dropped
+- After any change to the accessibility service XML config, users must toggle the service off and on in Settings → Accessibility for the new capability to take effect
+- Use `ACTION_SCROLL_DOWN.id` (vertical only) if you ever reintroduce action-based scrolling — `ACTION_SCROLL_FORWARD` matches horizontal pagers in Reddit and pages to the next post mid-extraction
+- The Gradle build cache can serve stale bytecode after `git revert` — always pass `--no-build-cache` after reverting to force recompilation
+
+## Architecture decision log
+
+See `CLAUDE.md` at the repo root for the full agent memory log (shared between Claude Code and OpenAI Codex), including every meaningful change, why it was made, and failed approaches that should not be retried.
+
+## Optional: full docs
+
+- `CLAUDE.md` — complete architecture reference, extraction rules, anti-patterns, agent log
+- `README.md` — user-facing documentation
