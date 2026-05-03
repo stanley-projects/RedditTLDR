@@ -377,9 +377,9 @@ class PostExtractor(private val service: AccessibilityService) {
         private const val MAX_UP_SCROLLS = 5
         private const val MAX_DOWN_SCROLLS = 6
 
-        private const val SCROLL_WAIT_MS = 350L        // was 500 — revert commit if captures degrade
-        private const val EXTRA_SCROLL_SETTLE_MS = 400L // was 500
-        private const val GESTURE_DURATION_MS = 250L    // was 500 — safe cut, unrelated to hydration
+        private const val SCROLL_WAIT_MS = 500L
+        private const val EXTRA_SCROLL_SETTLE_MS = 500L
+        private const val GESTURE_DURATION_MS = 500L
         private const val GESTURE_TIMEOUT_MS = 3000L
 
         private val SUBREDDIT_PATTERN = Regex("""\br/([A-Za-z0-9_]{3,21})\b""")
