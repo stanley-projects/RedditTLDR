@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.OvershootInterpolator
+import android.view.animation.PathInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.stanley.reddittldr.R
@@ -27,6 +27,7 @@ class DismissTargetView(context: Context) : FrameLayout(context) {
         background = context.getDrawable(R.drawable.dismiss_target_bg)
         val icon = ImageView(context).apply {
             setImageResource(R.drawable.ic_close)
+            setColorFilter(context.getColor(R.color.text_secondary))
             val pad = dp(20)
             setPadding(pad, pad, pad, pad)
         }
@@ -68,8 +69,8 @@ class DismissTargetView(context: Context) : FrameLayout(context) {
         circle.animate()
             .scaleX(1f)
             .scaleY(1f)
-            .setDuration(220)
-            .setInterpolator(OvershootInterpolator(1.6f))
+            .setDuration(260)
+            .setInterpolator(PathInterpolator(0.16f, 1f, 0.3f, 1f))
             .start()
     }
 

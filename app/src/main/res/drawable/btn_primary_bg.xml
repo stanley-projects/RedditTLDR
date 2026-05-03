@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Weighty primary button — Sonner-style: solid light fill, 0.5dp white inset
+    on top edge as a subtle highlight, 8dp radius. The "lit from above" feel
+    comes from layering against the card's darker surface.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/btn_primary_bg"/>
+    <corners android:radius="8dp"/>
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/white"/>
+</shape>

@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RedditTLDR summary card — three design philosophies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,700&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 20% 10%, #1a1a22 0%, transparent 60%),
+      radial-gradient(1000px 500px at 80% 90%, #15131a 0%, transparent 60%),
+      #0c0c0f;
+    color: #e9e9ec;
+    min-height: 100vh;
+    padding: 56px 24px 96px;
+  }
+
+  .page-title {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    text-align: center;
+    letter-spacing: -0.01em;
+    margin: 0 auto 8px;
+    max-width: 1200px;
+  }
+  .page-sub {
+    text-align: center;
+    color: #8a8a92;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 auto 56px;
+  }
+
+  .row {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .frame {
+    width: 380px;
+    flex-shrink: 0;
+  }
+
+  .label {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #cfcfd6;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .label .sub {
+    display: block;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: #6f6f78;
+    margin-top: 4px;
+  }
+
+  /* Phone shell — same for all three for fair comparison */
+  .phone {
+    position: relative;
+    width: 380px;
+    height: 780px;
+    border-radius: 44px;
+    background: #050507;
+    box-shadow:
+      inset 0 0 0 2px #1a1a20,
+      inset 0 0 0 8px #050507,
+      0 30px 80px -10px rgba(0,0,0,0.7),
+      0 20px 40px -10px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 110px; height: 26px;
+    background: #050507;
+    border-radius: 14px;
+    z-index: 50;
+  }
+  .screen {
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border-radius: 38px;
+    overflow: hidden;
+  }
+
+  /* Reddit-ish backdrop, dimmed for the modal effect */
+  .reddit-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, #0e1620 0%, #0a0c12 100%);
+  }
+  .reddit-toolbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: #0a1018;
+    display: flex; align-items: center; padding: 0 16px;
+    gap: 12px;
+    color: #6c7280;
+    font-size: 13px;
+  }
+  .reddit-toolbar .crumb { font-weight: 600; color: #cfcfd6; }
+  .reddit-bg .post-fade {
+    position: absolute; top: 56px; left: 0; right: 0; bottom: 0;
+    padding: 16px 18px;
+    color: #4a505a;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+  .scrim {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.62);
+  }
+
+  /* ------------------------------------------------------------- */
+  /*                          IMPECCABLE                            */
+  /* ------------------------------------------------------------- */
+  .imp-card {
+    position: absolute;
+    left: 16px; right: 16px; top: 70px;
+    border-radius: 24px;
+    background: oklch(0.21 0.012 268);
+    padding: 28px 26px 22px;
+    color: oklch(0.94 0.01 80);
+    font-family: 'Source Serif 4', Charter, 'Iowan Old Style', serif;
+    box-shadow:
+      0 1px 0 oklch(0.30 0.014 270 / 0.6) inset,
+      0 30px 60px -10px rgba(0,0,0,0.6);
+  }
+  .imp-card .eyebrow {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: oklch(0.65 0.03 80);
+    margin: 0 0 14px 0;
+  }
+  .imp-card h2 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    margin: 0 0 18px;
+    color: oklch(0.96 0.005 80);
+  }
+  .imp-card .body {
+    font-size: 15.5px;
+    line-height: 1.62;
+    letter-spacing: 0.005em;
+    color: oklch(0.86 0.012 80);
+    margin: 0 0 26px;
+  }
+  .imp-card .body em {
+    font-style: italic;
+    color: oklch(0.96 0.005 80);
+  }
+  .imp-card .rule {
+    height: 1px;
+    background: oklch(0.30 0.012 270);
+    margin: 22px 0 16px;
+  }
+  .imp-card .footer-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Inter Tight', sans-serif;
+    gap: 12px;
+  }
+  .imp-card .meta {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: oklch(0.55 0.012 80);
+  }
+  .imp-card .imp-btn {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: oklch(0.94 0.01 80);
+    background: transparent;
+    border: 1px solid oklch(0.45 0.012 270);
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 200ms cubic-bezier(.2,.8,.2,1),
+                color 200ms cubic-bezier(.2,.8,.2,1);
+  }
+  .imp-card .imp-btn:hover { border-color: oklch(0.70 0.02 80); color: oklch(1 0 0); }
+  .imp-card .close {
+    position: absolute; top: 18px; right: 18px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none; background: transparent;
+    color: oklch(0.55 0.012 80);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ------------------------------------------------------------- */
+  /*                       EMIL DESIGN ENG                          */
+  /* ------------------------------------------------------------- */
+  .emil-card {
+    position: absolute;
+    left: 14px; right: 14px; top: 64px;
+    border-radius: 18px;
+    background: #0e0e10;
+    color: #ededee;
+    font-family: 'Geist', sans-serif;
+    padding: 22px 22px 18px;
+    border: 1px solid #1f1f22;
+    box-shadow:
+      0 1px 0 #2a2a2e inset,
+      0 24px 48px -12px rgba(0,0,0,0.7),
+      0 8px 16px -8px rgba(0,0,0,0.4);
+    /* Asymmetric enter: subtle scale-up + opacity, like Sonner */
+    animation: emilEnter 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: 50% 0%;
+  }
+  @keyframes emilEnter {
+    0%   { opacity: 0; transform: translateY(-6px) scale(0.985); filter: blur(2px); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+  }
+  .emil-card .top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .emil-card .title {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: #f4f4f5;
+  }
+  .emil-card .title .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ededee;
+    vertical-align: middle;
+    margin-right: 8px;
+    transform: translateY(-1px);
+  }
+  .emil-card .x {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #71717a;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .emil-card .x:hover { background: #1f1f22; color: #ededee; }
+  .emil-card .body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #c4c4c8;
+    margin: 0 0 20px;
+    /* Measure ~55ch */
+    max-width: 55ch;
+  }
+  .emil-card .body strong { color: #f4f4f5; font-weight: 600; }
+  .emil-card .actions {
+    display: flex; gap: 8px; align-items: center;
+  }
+  /* Primary button — weighty, with two-layer shadow trick */
+  .emil-btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0a0a0a;
+    background: #f4f4f5;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow:
+      0 1px 0 #ffffff inset,
+      0 1px 2px rgba(0,0,0,0.4),
+      0 2px 8px -2px rgba(0,0,0,0.3);
+    transition: transform 180ms cubic-bezier(0.34, 1.2, 0.64, 1),
+                background 160ms ease;
+  }
+  .emil-btn:hover { background: #ffffff; }
+  .emil-btn:active { transform: translateY(0.5px) scale(0.99); }
+  .emil-btn-ghost {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #c4c4c8;
+    background: transparent;
+    padding: 8px 12px;
+    border: 1px solid #2a2a2e;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease;
+  }
+  .emil-btn-ghost:hover { border-color: #3a3a3e; color: #ededee; }
+  .emil-card .meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #1f1f22;
+    font-size: 11.5px;
+    color: #71717a;
+  }
+  .emil-card .meta-row .live {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .emil-card .meta-row .live::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80;
+    /* No infinite pulse — Emil is restrained. Single fade-in only. */
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4);
+  }
+
+  /* ------------------------------------------------------------- */
+  /*                         TASTE-SKILL                            */
+  /* ------------------------------------------------------------- */
+  .taste-card {
+    position: absolute;
+    left: 12px; right: 12px; top: 60px;
+    border-radius: 22px;
+    padding: 0;
+    color: #f8fafc;
+    font-family: 'Inter', sans-serif;
+    background:
+      linear-gradient(180deg, #1a0f2e 0%, #100820 60%, #0a0518 100%);
+    border: 1px solid rgba(168, 85, 247, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      0 30px 60px -10px rgba(124, 58, 237, 0.3),
+      0 12px 24px -8px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  /* Animated gradient sheen across whole card */
+  .taste-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(168, 85, 247, 0.08) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: tasteSheen 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes tasteSheen {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+  }
+  .taste-inner {
+    position: relative; z-index: 1;
+    padding: 22px 22px 20px;
+  }
+  .taste-card .header-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .taste-card .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .taste-card .live-pill::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: tastePulse 1.6s ease-out infinite;
+  }
+  @keyframes tastePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+  .taste-card .x {
+    margin-left: auto;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: #cbd5e1;
+    cursor: pointer;
+  }
+  .taste-card h2 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1.18;
+    letter-spacing: -0.022em;
+    margin: 0 0 6px;
+    background: linear-gradient(90deg,
+      #f8fafc 0%,
+      #c4b5fd 35%,
+      #f0abfc 65%,
+      #f8fafc 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: tasteShimmer 4s ease-in-out infinite;
+  }
+  @keyframes tasteShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .taste-card .meta-line {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10.5px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .taste-card .meta-line .sep { color: #4c1d95; }
+  .taste-card .body {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #e2e8f0;
+    margin: 0 0 18px;
+    font-weight: 400;
+  }
+  .taste-card .body strong {
+    color: #fff;
+    background: linear-gradient(90deg, #c4b5fd, #f0abfc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .taste-card .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .taste-card .stat {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .taste-card .stat .num {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    background: linear-gradient(90deg, #fff, #c4b5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .taste-card .stat .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #64748b;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .taste-card .cta {
+    display: flex; gap: 8px;
+  }
+  .taste-card .btn-primary {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.1) inset,
+      0 8px 20px -4px rgba(168, 85, 247, 0.4);
+    transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .taste-card .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(110deg,
+      transparent 30%,
+      rgba(255,255,255,0.18) 50%,
+      transparent 70%);
+    background-size: 200% 100%;
+    animation: tasteSheen 3s linear infinite;
+  }
+  .taste-card .btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+  }
+  .taste-card .btn-secondary {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+  }
+
+  /* ------------------------------------------------------------- */
+  /*                  Common Reddit-bg fake content                 */
+  /* ------------------------------------------------------------- */
+  .ctx-line { color: #2d3340; height: 11px; margin-bottom: 10px; border-radius: 3px;
+    background: linear-gradient(90deg, #1a1f2a 0%, #2a3140 50%, #1a1f2a 100%);
+    background-size: 200% 100%; }
+  .ctx-line.short { width: 60%; }
+  .ctx-line.medium { width: 85%; }
+
+  .legend {
+    text-align: center;
+    margin-top: 28px;
+    color: #6f6f78;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .legend strong { color: #cfcfd6; font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .emil-card,
+    .taste-card::before,
+    .taste-card .live-pill::before,
+    .taste-card h2,
+    .taste-card .btn-primary::after { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">RedditTLDR · summary card mockups</div>
+<div class="page-sub">Same content, three design philosophies</div>
+
+<div class="row">
+
+  <!-- ============================ IMPECCABLE ============================ -->
+  <div class="frame">
+    <div class="label">
+      Impeccable
+      <span class="sub">Distilled · tinted neutrals · no perpetual motion · serif body</span>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="reddit-bg">
+          <div class="reddit-toolbar">
+            <span>×</span><span class="crumb">r/SideProject</span>
+          </div>
+          <div class="post-fade">
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+          </div>
+          <div class="scrim"></div>
+        </div>
+        <div class="imp-card">
+          <button class="close" aria-label="Close">×</button>
+          <p class="eyebrow">Summary</p>
+          <h2>One hundred hours, a website that streams live sunsets.</h2>
+          <p class="body">
+            The creator built a site that pulls live sunsets from cameras around the world and uses an
+            <em>AI ranker</em> to surface only the beautiful ones. After launch it reached
+            1,000 visits and 8,000 sunset views — framed as a passion project that
+            “brings genuine joy to people.”
+          </p>
+          <div class="rule"></div>
+          <div class="footer-row">
+            <span class="meta">97 lines · 7 screens</span>
+            <button class="imp-btn">Summarize comments</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      Single static surface. Serif body for reading rhythm. Eyebrow label, divider rule, no infinite motion. Pill button is text-only with a 1px border.
+    </div>
+  </div>
+
+  <!-- ============================ EMIL ============================ -->
+  <div class="frame">
+    <div class="label">
+      Emil Design Eng
+      <span class="sub">Sonner-style cohesion · single fade-in · weighty primary · quiet</span>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="reddit-bg">
+          <div class="reddit-toolbar">
+            <span>×</span><span class="crumb">r/SideProject</span>
+          </div>
+          <div class="post-fade">
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+          </div>
+          <div class="scrim"></div>
+        </div>
+        <div class="emil-card">
+          <div class="top">
+            <span class="title"><span class="dot"></span>Summary</span>
+            <button class="x" aria-label="Close">×</button>
+          </div>
+          <p class="body">
+            <strong>100 hours</strong> building a website that streams live sunsets from cameras around the world,
+            with AI-ranking to surface only beautiful ones. After launch it hit
+            <strong>1k visits and 8k sunset views</strong> — a passion project the creator says
+            “brings genuine joy to people.”
+          </p>
+          <div class="actions">
+            <button class="emil-btn">Summarize comments</button>
+            <button class="emil-btn-ghost">Copy</button>
+          </div>
+          <div class="meta-row">
+            <span class="live">captured 97 lines · 7 screens</span>
+            <span>just now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      Tight, single sans family. Card enters once with a 460ms blur+lift, then is still. Primary button is solid white-on-black with a two-layer inset shadow — Sonner's "weighty" feel. No infinite anything.
+    </div>
+  </div>
+
+  <!-- ============================ TASTE-SKILL ============================ -->
+  <div class="frame">
+    <div class="label">
+      Taste-skill
+      <span class="sub">Perpetual motion · gradient · live pill · stat grid · overshoot CTA</span>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="reddit-bg">
+          <div class="reddit-toolbar">
+            <span>×</span><span class="crumb">r/SideProject</span>
+          </div>
+          <div class="post-fade">
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+          </div>
+          <div class="scrim"></div>
+        </div>
+        <div class="taste-card">
+          <div class="taste-inner">
+            <div class="header-row">
+              <span class="live-pill">Live</span>
+              <button class="x" aria-label="Close">×</button>
+            </div>
+            <h2>One hundred hours, one beautiful sunset stream.</h2>
+            <div class="meta-line">
+              <span>r/SideProject</span><span class="sep">/</span>
+              <span>97 lines</span><span class="sep">/</span>
+              <span>7 screens</span>
+            </div>
+            <p class="body">
+              The creator built a site that pulls <strong>live sunsets</strong> from cameras around the world,
+              with <strong>AI-ranking</strong> to surface only the beautiful ones. After launch it reached
+              <strong>1k visits and 8k sunset views</strong> — framed as a passion project that
+              "brings genuine joy to people."
+            </p>
+            <div class="stat-grid">
+              <div class="stat"><div class="num">100<span style="font-size:11px;opacity:0.6;">h</span></div><div class="lbl">Hours</div></div>
+              <div class="stat"><div class="num">1k</div><div class="lbl">Visits</div></div>
+              <div class="stat"><div class="num">8k</div><div class="lbl">Sunsets</div></div>
+            </div>
+            <div class="cta">
+              <button class="btn-primary">Summarize comments</button>
+              <button class="btn-secondary">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      Pulsing "live" indicator, perpetual sheen across the card and button, gradient title that shimmers infinitely, three-up stat grid, gradient CTA with overshoot springs on hover. Density 4, motion 6 — the maximalist baseline.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

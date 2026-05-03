@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Accent dot used to the left of the eyebrow label. Single static state. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/accent_dot"/>
+    <size android:width="6dp" android:height="6dp"/>
+</shape>

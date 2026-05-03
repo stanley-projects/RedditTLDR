@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dismiss target – active state (bubble magnetically locked here).
+    Muted earthy warm fill rather than harsh pure red — communicates
+    "danger/dismiss" without visual shouting.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#E6E53935"/>
-    <stroke android:width="2dp" android:color="#FFFFFFFF"/>
+    <solid android:color="#E04A1E10"/>
+    <stroke android:width="1.5dp" android:color="@color/accent_dot"/>
 </shape>

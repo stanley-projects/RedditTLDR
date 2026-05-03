@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stanley.reddittldr.data.SettingsRepository
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            MaterialTheme(colorScheme = appColorScheme) {
                 val snapshot by permissionFlow.collectAsStateWithLifecycle()
                 SettingsScreen(
                     settings = settings,
@@ -75,4 +76,29 @@ class MainActivity : ComponentActivity() {
         val overlay: Boolean,
         val notifications: Boolean
     )
+
+    companion object {
+        // Impeccable palette wired into Material3 so every default Compose
+        // component (TextField, Button, Chip, etc.) draws from our tinted-neutral
+        // system instead of the generic M3 dark defaults.
+        val appColorScheme = darkColorScheme(
+            background         = Color(0xFF19141C),  // deep tinted dark (scrim family)
+            surface            = Color(0xFF2A2C32),  // card_bg
+            surfaceVariant     = Color(0xFF232529),  // slightly deeper surface
+            onBackground       = Color(0xFFF6F4F0),  // text_primary
+            onSurface          = Color(0xFFF6F4F0),  // text_primary
+            onSurfaceVariant   = Color(0xFF8B847A),  // text_tertiary
+            primary            = Color(0xFFF6F4F0),  // btn_primary_bg
+            onPrimary          = Color(0xFF1F2128),  // btn_primary_text
+            primaryContainer   = Color(0xFF3A3C45),
+            onPrimaryContainer = Color(0xFFF6F4F0),
+            secondary          = Color(0xFFD4B26B),  // accent_dot (warm gold)
+            onSecondary        = Color(0xFF1F2128),
+            outline            = Color(0xFF3D3F47),  // surface_card_hairline
+            outlineVariant     = Color(0xFF2E3038),
+            error              = Color(0xFFB47A6A),  // muted terracotta error
+            onError            = Color(0xFF1F2128),
+            scrim              = Color(0xFF19141C),
+        )
+    }
 }

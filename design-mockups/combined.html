@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RedditTLDR — Impeccable × Emil combined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    color: oklch(0.94 0.01 80);
+    background:
+      radial-gradient(1200px 600px at 30% 10%,  oklch(0.18 0.018 268) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 80% 90%,  oklch(0.16 0.020 280) 0%, transparent 60%),
+      oklch(0.12 0.012 270);
+    min-height: 100vh;
+    padding: 64px 24px 96px;
+  }
+
+  .page-title {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    text-align: center;
+    letter-spacing: -0.012em;
+    margin: 0 auto 6px;
+    color: oklch(0.95 0.005 80);
+  }
+  .page-sub {
+    text-align: center;
+    color: oklch(0.55 0.012 80);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin: 0 auto 56px;
+  }
+
+  .stage {
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* ----------------------- phone shell ----------------------- */
+  .phone {
+    position: relative;
+    width: 380px;
+    height: 780px;
+    border-radius: 44px;
+    background: #050507;
+    box-shadow:
+      inset 0 0 0 2px #1a1a20,
+      inset 0 0 0 8px #050507,
+      0 30px 80px -10px rgba(0,0,0,0.7),
+      0 20px 40px -10px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 26px;
+    background: #050507;
+    border-radius: 14px;
+    z-index: 50;
+  }
+  .screen {
+    position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border-radius: 38px; overflow: hidden;
+  }
+
+  /* dimmed Reddit context behind the modal */
+  .reddit-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, oklch(0.16 0.018 268) 0%, oklch(0.12 0.020 270) 100%);
+  }
+  .reddit-toolbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: oklch(0.14 0.020 268);
+    display: flex; align-items: center; padding: 0 18px;
+    gap: 12px;
+    color: oklch(0.50 0.012 80);
+    font-size: 13px;
+    font-family: 'Geist', sans-serif;
+  }
+  .reddit-toolbar .crumb { font-weight: 500; color: oklch(0.78 0.005 80); }
+  .post-fade {
+    position: absolute; top: 56px; left: 0; right: 0; bottom: 0;
+    padding: 18px 20px;
+  }
+  .ctx-line {
+    height: 11px; margin-bottom: 12px; border-radius: 3px;
+    background: oklch(0.22 0.012 270);
+    opacity: 0.6;
+  }
+  .ctx-line.short { width: 60%; }
+  .ctx-line.medium { width: 85%; }
+  .scrim {
+    position: absolute; inset: 0;
+    background: oklch(0.05 0.01 270 / 0.62);
+    backdrop-filter: blur(0.5px);
+  }
+
+  /* ============================================================ */
+  /*       THE CARD — impeccable surface × emil cohesion         */
+  /* ============================================================ */
+  .card {
+    position: absolute;
+    left: 14px; right: 14px; top: 64px;
+    border-radius: 22px;
+    background: oklch(0.215 0.014 268);
+    color: oklch(0.94 0.01 80);
+    /* Asymmetric padding (more at top, per impeccable's spatial-design) */
+    padding: 28px 26px 20px;
+
+    /* Two-layer shadow trick from emil's Sonner principles:
+       1px highlight inside, then a soft drop. Gives weight without bulk. */
+    box-shadow:
+      0 1px 0 oklch(0.32 0.014 270 / 0.7) inset,
+      0 0 0 1px oklch(0.10 0.012 270) inset,
+      0 30px 60px -10px oklch(0.04 0.01 270 / 0.7),
+      0 8px 20px -8px oklch(0.04 0.01 270 / 0.5);
+
+    /* Single deliberate entrance: emil's @starting-style flavor done with
+       keyframes for cross-browser. Blur+lift+settle, then still forever. */
+    animation: cardEnter 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: 50% 0%;
+  }
+  @keyframes cardEnter {
+    0%   { opacity: 0; transform: translateY(-6px) scale(0.985); filter: blur(2px); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+  }
+
+  .close {
+    position: absolute; top: 18px; right: 18px;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: oklch(0.55 0.012 80);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    transition: background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .close:hover {
+    background: oklch(0.27 0.012 270);
+    color: oklch(0.94 0.01 80);
+    border-color: oklch(0.32 0.014 270);
+  }
+
+  /* Eyebrow — impeccable's small-caps label pattern, set in Geist (sans). */
+  .eyebrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: oklch(0.62 0.012 80);
+    margin: 0 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: oklch(0.78 0.13 80);
+    box-shadow: 0 0 12px oklch(0.78 0.13 80 / 0.4);
+  }
+
+  /* Headline — impeccable's serif for prose, modular scale. */
+  h2 {
+    font-family: 'Source Serif 4', Charter, 'Iowan Old Style', serif;
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 1.20;
+    letter-spacing: -0.012em;
+    margin: 0 0 18px;
+    color: oklch(0.97 0.005 80);
+  }
+
+  /* Body — serif again, generous line-height, on-screen tracking nudge. */
+  .body {
+    font-family: 'Source Serif 4', Charter, serif;
+    font-weight: 400;
+    font-size: 15.5px;
+    line-height: 1.65;
+    letter-spacing: 0.005em;
+    color: oklch(0.86 0.012 80);
+    margin: 0 0 22px;
+  }
+  .body em {
+    font-style: italic;
+    color: oklch(0.95 0.005 80);
+  }
+
+  /* Hairline rule — impeccable's spatial language, very fine. */
+  .rule {
+    height: 1px;
+    background: oklch(0.30 0.012 270);
+    margin: 18px -2px 14px;
+  }
+
+  /* Footer row — meta and actions share a baseline. */
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'Geist', sans-serif;
+  }
+
+  /* Meta — fine type, small-caps, single live-capture dot. */
+  .meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: oklch(0.52 0.012 80);
+  }
+  .meta::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: oklch(0.65 0.16 145); /* muted green, single state — no pulse */
+  }
+
+  /* Actions — primary uses emil's weighty Sonner button; secondary is
+     impeccable's outlined pill, sized to match. */
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition:
+      background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
+  }
+  .btn:active { transform: translateY(0.5px) scale(0.99); }
+
+  /* Primary — weighty, two-layer inset shadow (emil) */
+  .btn-primary {
+    color: oklch(0.16 0.018 268);
+    background: oklch(0.97 0.005 80);
+    border: 1px solid oklch(0.97 0.005 80);
+    box-shadow:
+      0 1px 0 oklch(1 0 0) inset,
+      0 1px 2px oklch(0.04 0.01 270 / 0.4),
+      0 2px 8px -2px oklch(0.04 0.01 270 / 0.3);
+  }
+  .btn-primary:hover { background: oklch(1 0 0); border-color: oklch(1 0 0); }
+
+  /* Secondary — outlined pill (impeccable), restrained */
+  .btn-ghost {
+    color: oklch(0.86 0.012 80);
+    background: transparent;
+    border: 1px solid oklch(0.36 0.012 270);
+  }
+  .btn-ghost:hover {
+    border-color: oklch(0.55 0.014 270);
+    color: oklch(0.97 0.005 80);
+  }
+
+  /* legend below the phone */
+  .legend {
+    text-align: left;
+    margin-top: 28px;
+    color: oklch(0.55 0.012 80);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 420px;
+    font-family: 'Geist', sans-serif;
+  }
+  .legend h3 {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: oklch(0.78 0.005 80);
+    margin: 0 0 10px;
+  }
+  .legend ul {
+    list-style: none;
+    padding: 0; margin: 0;
+  }
+  .legend li {
+    padding: 4px 0;
+    border-bottom: 1px solid oklch(0.20 0.012 270);
+  }
+  .legend li:last-child { border-bottom: none; }
+  .legend strong {
+    color: oklch(0.86 0.012 80);
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none !important; }
+  }
+
+  @media (max-width: 880px) {
+    .stage { gap: 40px; }
+    .legend { max-width: 380px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">RedditTLDR · Impeccable × Emil</div>
+<div class="page-sub">Distilled · Crafted · Single Surface</div>
+
+<div class="stage">
+
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="reddit-bg">
+          <div class="reddit-toolbar">
+            <span>×</span><span class="crumb">r/SideProject</span>
+          </div>
+          <div class="post-fade">
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+          </div>
+          <div class="scrim"></div>
+        </div>
+
+        <article class="card" aria-labelledby="card-title">
+          <button class="close" aria-label="Close">×</button>
+          <p class="eyebrow">Summary</p>
+          <h2 id="card-title">One hundred hours, a website that streams live sunsets.</h2>
+          <p class="body">
+            The creator built a site that pulls live sunsets from cameras around the
+            world and uses an <em>AI ranker</em> to surface only the beautiful ones.
+            After launch it reached 1,000 visits and 8,000 sunset views — framed as a
+            passion project that “brings genuine joy to people.”
+          </p>
+          <div class="rule"></div>
+          <div class="footer-row">
+            <span class="meta">97 lines · 7 screens</span>
+            <div class="actions">
+              <button class="btn btn-ghost">Copy</button>
+              <button class="btn btn-primary">Summarize comments</button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h3>What's combined</h3>
+    <ul>
+      <li><strong>Surface · Impeccable</strong> — OKLCH-tinted neutrals (no pure black/gray), warm-cool axis, single card surface — no nested cards.</li>
+      <li><strong>Type · Impeccable</strong> — Source Serif 4 for prose (reading rhythm), Geist for UI labels and metadata. Modular scale, no Inter.</li>
+      <li><strong>Entrance · Emil</strong> — One 460ms blur+lift on mount, then perfectly still. No infinite anything.</li>
+      <li><strong>Primary button · Emil</strong> — Sonner's two-layer shadow trick: 1px highlight inside, soft drop outside. Weight without bulk.</li>
+      <li><strong>Secondary button · Impeccable</strong> — Outlined pill, fine 1px border, restrained hover.</li>
+      <li><strong>Eyebrow · Impeccable</strong> — Small-caps label with a single static accent dot (no pulse).</li>
+      <li><strong>Hairline · Impeccable</strong> — 1px rule separates content from controls. No heavier divider needed.</li>
+      <li><strong>Press feedback · Emil</strong> — Buttons translate 0.5px and scale 0.99 on press. Mouse-down only; no continuous motion.</li>
+      <li><strong>Reduced-motion · Both</strong> — `prefers-reduced-motion` kills the entrance animation entirely.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

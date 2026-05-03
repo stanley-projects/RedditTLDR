@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RedditTLDR — Impeccable × Emil × Taste (refined)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    color: oklch(0.94 0.01 80);
+    background:
+      radial-gradient(1200px 600px at 30% 10%,  oklch(0.18 0.018 268) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 80% 90%,  oklch(0.16 0.020 280) 0%, transparent 60%),
+      oklch(0.12 0.012 270);
+    min-height: 100vh;
+    padding: 64px 24px 96px;
+  }
+
+  .page-title {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    text-align: center;
+    letter-spacing: -0.012em;
+    margin: 0 auto 6px;
+    color: oklch(0.95 0.005 80);
+  }
+  .page-sub {
+    text-align: center;
+    color: oklch(0.55 0.012 80);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin: 0 auto 56px;
+  }
+
+  .stage {
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* ----------------------- phone shell ----------------------- */
+  .phone {
+    position: relative;
+    width: 380px;
+    height: 780px;
+    border-radius: 44px;
+    background: #050507;
+    box-shadow:
+      inset 0 0 0 2px #1a1a20,
+      inset 0 0 0 8px #050507,
+      0 30px 80px -10px rgba(0,0,0,0.7),
+      0 20px 40px -10px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 26px;
+    background: #050507;
+    border-radius: 14px;
+    z-index: 50;
+  }
+  .screen {
+    position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border-radius: 38px; overflow: hidden;
+  }
+
+  .reddit-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, oklch(0.16 0.018 268) 0%, oklch(0.12 0.020 270) 100%);
+  }
+  .reddit-toolbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 56px;
+    background: oklch(0.14 0.020 268);
+    display: flex; align-items: center; padding: 0 18px;
+    gap: 12px;
+    color: oklch(0.50 0.012 80);
+    font-size: 13px;
+    font-family: 'Geist', sans-serif;
+  }
+  .reddit-toolbar .crumb { font-weight: 500; color: oklch(0.78 0.005 80); }
+  .post-fade {
+    position: absolute; top: 56px; left: 0; right: 0; bottom: 0;
+    padding: 18px 20px;
+  }
+  .ctx-line {
+    height: 11px; margin-bottom: 12px; border-radius: 3px;
+    background: oklch(0.22 0.012 270);
+    opacity: 0.6;
+  }
+  .ctx-line.short { width: 60%; }
+  .ctx-line.medium { width: 85%; }
+  .scrim {
+    position: absolute; inset: 0;
+    background: oklch(0.05 0.01 270 / 0.62);
+  }
+
+  /* ============================================================ */
+  /*   THE CARD — impeccable × emil base, taste-skill (refined)    */
+  /* ============================================================ */
+  .card {
+    position: absolute;
+    left: 14px; right: 14px; top: 64px;
+    border-radius: 22px;
+    background: oklch(0.215 0.014 268);
+    color: oklch(0.94 0.01 80);
+    padding: 26px 26px 18px;
+    box-shadow:
+      0 1px 0 oklch(0.32 0.014 270 / 0.7) inset,
+      0 0 0 1px oklch(0.10 0.012 270) inset,
+      0 30px 60px -10px oklch(0.04 0.01 270 / 0.7),
+      0 8px 20px -8px oklch(0.04 0.01 270 / 0.5);
+    animation: cardEnter 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: 50% 0%;
+    overflow: hidden;
+  }
+  /* Taste-skill (refined): a *very* faint top-edge highlight gradient.
+     ~6% white, 1px tall, just a sense that the card is "lit", not a sheen.
+     Static — does not animate. */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 12%; right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      oklch(0.96 0.005 80 / 0.20) 50%,
+      transparent 100%);
+    pointer-events: none;
+  }
+  @keyframes cardEnter {
+    0%   { opacity: 0; transform: translateY(-6px) scale(0.985); filter: blur(2px); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+  }
+
+  .close {
+    position: absolute; top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: oklch(0.55 0.012 80);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    transition: background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .close:hover {
+    background: oklch(0.27 0.012 270);
+    color: oklch(0.94 0.01 80);
+    border-color: oklch(0.32 0.014 270);
+  }
+
+  /* Header row — eyebrow on left, source-context on right.
+     Source-context (r/SideProject · 26m) is taste-skill's density move
+     done in neutral mono type, no gradients. */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 14px;
+  }
+  .eyebrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: oklch(0.62 0.012 80);
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: oklch(0.78 0.13 80);
+    box-shadow: 0 0 12px oklch(0.78 0.13 80 / 0.4);
+  }
+  .src {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 400;
+    color: oklch(0.50 0.012 80);
+    letter-spacing: 0.02em;
+  }
+  .src .sep { color: oklch(0.32 0.012 270); margin: 0 6px; }
+
+  h2 {
+    font-family: 'Source Serif 4', Charter, 'Iowan Old Style', serif;
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 1.20;
+    letter-spacing: -0.012em;
+    margin: 0 0 16px;
+    color: oklch(0.97 0.005 80);
+  }
+
+  /* Stats row — taste-skill's density translated to a single
+     restrained mono line, no gradient grid. Sits between headline
+     and body as a "what it is, in numbers" glance. */
+  .stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: oklch(0.62 0.012 80);
+    letter-spacing: 0.06em;
+    margin: 0 0 18px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: oklch(0.18 0.012 270);
+    border: 1px solid oklch(0.26 0.012 270);
+  }
+  .stats .num {
+    color: oklch(0.92 0.01 80);
+    font-weight: 500;
+  }
+  .stats .lbl { margin: 0 6px 0 4px; }
+  .stats .pipe {
+    color: oklch(0.30 0.012 270);
+    margin: 0 6px;
+  }
+
+  .body {
+    font-family: 'Source Serif 4', Charter, serif;
+    font-weight: 400;
+    font-size: 15.5px;
+    line-height: 1.65;
+    letter-spacing: 0.005em;
+    color: oklch(0.86 0.012 80);
+    margin: 0 0 22px;
+  }
+  .body em {
+    font-style: italic;
+    color: oklch(0.95 0.005 80);
+  }
+
+  .rule {
+    height: 1px;
+    background: oklch(0.30 0.012 270);
+    margin: 16px -2px 14px;
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'Geist', sans-serif;
+  }
+
+  .meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: oklch(0.52 0.012 80);
+  }
+  .meta::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: oklch(0.65 0.16 145);
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition:
+      background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 220ms cubic-bezier(0.34, 1.20, 0.64, 1);
+    will-change: transform;
+  }
+  .btn:active { transform: translateY(0.5px) scale(0.99); }
+
+  /* Primary — emil's two-layer Sonner button.
+     Taste-skill (refined): a tiny scale on hover with a SUBTLE
+     overshoot easing (subtle = 1.04 max, quickly settling). */
+  .btn-primary {
+    color: oklch(0.16 0.018 268);
+    background: oklch(0.97 0.005 80);
+    border: 1px solid oklch(0.97 0.005 80);
+    box-shadow:
+      0 1px 0 oklch(1 0 0) inset,
+      0 1px 2px oklch(0.04 0.01 270 / 0.4),
+      0 2px 8px -2px oklch(0.04 0.01 270 / 0.3);
+  }
+  .btn-primary:hover {
+    background: oklch(1 0 0);
+    border-color: oklch(1 0 0);
+    transform: scale(1.025);
+  }
+
+  .btn-ghost {
+    color: oklch(0.86 0.012 80);
+    background: transparent;
+    border: 1px solid oklch(0.36 0.012 270);
+  }
+  .btn-ghost:hover {
+    border-color: oklch(0.55 0.014 270);
+    color: oklch(0.97 0.005 80);
+  }
+
+  .legend {
+    text-align: left;
+    margin-top: 28px;
+    color: oklch(0.55 0.012 80);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 420px;
+    font-family: 'Geist', sans-serif;
+  }
+  .legend h3 {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: oklch(0.78 0.005 80);
+    margin: 0 0 10px;
+  }
+  .legend ul {
+    list-style: none;
+    padding: 0; margin: 0;
+  }
+  .legend li {
+    padding: 5px 0;
+    border-bottom: 1px solid oklch(0.20 0.012 270);
+  }
+  .legend li:last-child { border-bottom: none; }
+  .legend strong {
+    color: oklch(0.86 0.012 80);
+    font-weight: 600;
+  }
+  .legend .grp {
+    color: oklch(0.78 0.005 80);
+    font-weight: 500;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none !important; }
+    .btn-primary:hover { transform: none; }
+  }
+
+  @media (max-width: 880px) {
+    .stage { gap: 40px; }
+    .legend { max-width: 380px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">RedditTLDR · Impeccable × Emil × Taste (refined)</div>
+<div class="page-sub">Restrained base · Lifted edges · Quiet density</div>
+
+<div class="stage">
+
+  <div>
+    <div class="phone">
+      <div class="screen">
+        <div class="reddit-bg">
+          <div class="reddit-toolbar">
+            <span>×</span><span class="crumb">r/SideProject</span>
+          </div>
+          <div class="post-fade">
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line medium"></div>
+            <div class="ctx-line short"></div>
+          </div>
+          <div class="scrim"></div>
+        </div>
+
+        <article class="card" aria-labelledby="card-title">
+          <button class="close" aria-label="Close">×</button>
+
+          <div class="header">
+            <p class="eyebrow">Summary</p>
+            <span class="src">r/SideProject<span class="sep">·</span>26m</span>
+          </div>
+
+          <h2 id="card-title">One hundred hours, a website that streams live sunsets.</h2>
+
+          <div class="stats">
+            <span class="num">100</span><span class="lbl">h built</span>
+            <span class="pipe">·</span>
+            <span class="num">1k</span><span class="lbl">visits</span>
+            <span class="pipe">·</span>
+            <span class="num">8k</span><span class="lbl">views</span>
+          </div>
+
+          <p class="body">
+            The creator built a site that pulls live sunsets from cameras around
+            the world and uses an <em>AI ranker</em> to surface only the beautiful
+            ones. After launch it reached 1,000 visits and 8,000 sunset views —
+            framed as a passion project that “brings genuine joy to people.”
+          </p>
+
+          <div class="rule"></div>
+          <div class="footer-row">
+            <span class="meta">97 lines · 7 screens</span>
+            <div class="actions">
+              <button class="btn btn-ghost">Copy</button>
+              <button class="btn btn-primary">Summarize comments</button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h3>What's combined</h3>
+    <ul>
+      <li><span class="grp">Base · Impeccable + Emil</span> — same OKLCH-tinted surface, Source Serif 4 prose, Geist UI, single 460ms blur+lift entrance, weighty Sonner-style primary, outlined pill ghost.</li>
+      <li><span class="grp">From Taste-skill (refined) ·</span> <strong>Source-context line</strong> in Geist Mono next to the eyebrow — `r/SideProject · 26m`. Density without noise.</li>
+      <li><span class="grp">From Taste-skill (refined) ·</span> <strong>Inline stat strip</strong> — `100h built · 1k visits · 8k views` in mono, sitting in a 1px-bordered chip. Single tone, no gradient grid.</li>
+      <li><span class="grp">From Taste-skill (refined) ·</span> <strong>Lifted top edge</strong> — a 1px white-to-transparent gradient at the card's top sliver. Static, not animated. Just a sense the surface is "lit".</li>
+      <li><span class="grp">From Taste-skill (refined) ·</span> <strong>Subtle overshoot on primary hover</strong> — scale to 1.025 with a soft cubic-bezier(0.34, 1.2, 0.64, 1). Single hover gesture, settles, done. No infinite anything.</li>
+      <li><span class="grp">Rejected from Taste-skill ·</span> purple/pink gradients, perpetual sheen, pulsing pills, gradient stat tiles, magnetic mouse-tracking, animated text gradients, `MOTION_INTENSITY=6` baseline.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

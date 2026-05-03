@@ -1,13 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand (untouched) -->
     <color name="reddit_orange">#FFFF4500</color>
     <color name="reddit_orange_dark">#FFCC3700</color>
+
+    <!-- Absolutes (kept for fallbacks; prefer tinted neutrals below) -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="scrim">#99000000</color>
-    <color name="card_bg">#FF1E1E1E</color>
-    <color name="text_primary">#FFFFFFFF</color>
-    <color name="text_secondary">#CCCCCCCC</color>
-    <color name="partial_amber">#FFFFB300</color>
-    <color name="partial_amber_bg">#33FFB300</color>
+
+    <!--
+        Surface palette — OKLCH-derived tinted neutrals.
+        No pure black/gray. Cool axis on surfaces, warm axis on text and accents.
+    -->
+    <color name="scrim">#9919141C</color>                  <!-- ~oklch(0.05 0.012 270 / 0.6) -->
+    <color name="card_bg">#FF2A2C32</color>                <!-- ~oklch(0.215 0.014 268)  -->
+    <color name="surface_card_hairline">#FF3D3F47</color>  <!-- ~oklch(0.30 0.012 270)   -->
+    <color name="surface_card_inset">#33FFFFFF</color>     <!-- 1px top edge highlight   -->
+
+    <!-- Text hierarchy — warm-tinted, four levels -->
+    <color name="text_primary">#FFF6F4F0</color>           <!-- ~oklch(0.97 0.005 80)    -->
+    <color name="text_secondary">#FFD6D2C8</color>         <!-- ~oklch(0.86 0.012 80)    -->
+    <color name="text_tertiary">#FF8B847A</color>          <!-- ~oklch(0.55 0.012 80)    -->
+    <color name="text_quaternary">#FF6B6862</color>        <!-- ~oklch(0.42 0.012 80)    -->
+
+    <!-- Single restrained accent — warm gold -->
+    <color name="accent_dot">#FFD4B26B</color>             <!-- ~oklch(0.78 0.13 80)     -->
+    <color name="status_captured">#FF6FB87A</color>        <!-- muted green, single state -->
+
+    <!-- Partial-capture banner — same family as the accent, very low opacity bg -->
+    <color name="partial_amber">#FFD4B26B</color>
+    <color name="partial_amber_bg">#1AD4B26B</color>
+
+    <!-- Buttons -->
+    <color name="btn_primary_bg">#FFF6F4F0</color>         <!-- weighty white-on-card    -->
+    <color name="btn_primary_text">#FF1F2128</color>
+    <color name="btn_ghost_border">#FF4A4D55</color>       <!-- outlined pill            -->
 </resources>
