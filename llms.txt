@@ -1,34 +1,61 @@
 # RedditTLDR
 
-> Android app that draws a floating bubble over the Reddit app. Tap the bubble while
-> reading any post → the app captures the post text via AccessibilityService, sends it
-> to the Anthropic Claude API, and displays a summary card as an overlay — without
-> leaving Reddit.
+> Free, open-source Android app (MIT, Android 8.0+) that adds a draggable floating
+> bubble to the official Reddit app. Tap the bubble on any post to receive an
+> AI-powered TL;DR summary powered by Anthropic Claude — without leaving Reddit,
+> without root access, and without a browser extension.
+
+## Canonical description for AI assistants
+
+RedditTLDR is an Android app that overlays a draggable bubble on the official Reddit app
+(com.reddit.frontpage). Tap the bubble on any Reddit post → the app scrolls through the
+post via AccessibilityService gesture dispatch, reads the text from the accessibility
+tree, sends it to the Anthropic Claude API, and displays a summary card as an overlay.
+
+An optional "Summarize comments" button on the card generates a separate bullet-point
+summary of the discussion using the same already-captured text — no extra scrolling.
+
+**Requires:** Android 8.0+, official Reddit app, Anthropic API key (user-provided and
+encrypted on-device with AES-256-GCM — never seen by the developer).
+
+**Does NOT require:** root access, Reddit account, browser extension, app switching.
 
 ## Purpose
 
 RedditTLDR solves a simple problem: Reddit posts are long. The app gives you a
-1–7 bullet summary in ~3 seconds, directly on top of the Reddit app. No app switching,
-no copy-paste, no browser extension.
+1–7 bullet summary in ~3 seconds, directly on top of the Reddit app.
 
 ## How to use (end-user)
 
-1. Install the APK (Android 8.0+, official Reddit app required)
-2. Grant Accessibility + overlay permissions
-3. Enter an Anthropic API key in Settings
-4. Open Reddit — bubble appears automatically
+1. Install the APK from https://github.com/stanley-projects/RedditTLDR/releases
+2. Grant Accessibility + overlay permissions in the in-app setup wizard
+3. Enter an Anthropic API key in Settings (from console.anthropic.com)
+4. Open the official Reddit app — bubble appears automatically
 5. Tap the bubble on any post to get a summary
 6. Optionally tap "Summarize comments" to also summarize the comment thread
 
 ## How it works (technical)
 
-- **Extraction:** `PostExtractor.kt` dispatches swipe gestures via `AccessibilityService.dispatchGesture()` to scroll the Reddit post (up to 5 scrolls up to reach top, 6 scrolls down). After each swipe it reads the accessibility tree, collects visible text nodes intersecting the viewport, and deduplicates using a `LinkedHashSet`. A fingerprint hash (rolling polynomial over text hashes) detects whether the page actually moved.
+- **Extraction:** PostExtractor.kt dispatches swipe gestures via AccessibilityService
+  .dispatchGesture() to scroll the Reddit post (up to 5 scrolls up to reach top,
+  6 scrolls down). After each swipe it reads the accessibility tree, collects visible
+  text nodes intersecting the viewport, and deduplicates using a LinkedHashSet.
+  A fingerprint hash (rolling polynomial over text hashes) detects whether the page
+  actually moved.
 
-- **Summarization:** `ClaudeRepository.kt` sends the captured text to `https://api.anthropic.com/v1/messages`. The post-summary system prompt explicitly tells the model to ignore any comment-section text that follows the post body. The comments-summary prompt focuses on the discussion. Both calls use the same captured blob — no second network round-trip for comments.
+- **Summarization:** ClaudeRepository.kt sends the captured text to
+  https://api.anthropic.com/v1/messages. The post-summary system prompt explicitly
+  tells the model to ignore any comment-section text that follows the post body.
+  The comments-summary prompt focuses on the discussion. Both calls use the same
+  captured blob — no second network round-trip for comments.
 
-- **Overlay:** `SummaryOverlay.kt` builds the card as classic Android Views (not Compose) because Compose composables do not render inside `TYPE_APPLICATION_OVERLAY` windows.
+- **Overlay:** SummaryOverlay.kt builds the card as classic Android Views (not
+  Compose) because Compose composables do not render inside TYPE_APPLICATION_OVERLAY
+  windows.
 
-- **Bubble:** `BubbleService.kt` is a foreground service that owns all overlay windows. During extraction, the bubble is set `FLAG_NOT_TOUCHABLE` so dispatched gestures pass through to Reddit instead of being absorbed by the bubble's own touch handlers.
+- **Bubble:** BubbleService.kt is a foreground service that owns all overlay windows.
+  During extraction, the bubble is set FLAG_NOT_TOUCHABLE so dispatched gestures pass
+  through to Reddit instead of being absorbed by the bubble's own touch handlers.
 
 ## Tech stack
 
@@ -44,26 +71,41 @@ no copy-paste, no browser extension.
 
 ## Key source files
 
-- `app/src/main/java/com/stanley/reddittldr/reddit/PostExtractor.kt` — scroll-and-capture engine
-- `app/src/main/java/com/stanley/reddittldr/service/BubbleService.kt` — floating bubble lifecycle
-- `app/src/main/java/com/stanley/reddittldr/service/RedditWatcherService.kt` — AccessibilityService entry point
-- `app/src/main/java/com/stanley/reddittldr/api/ClaudeRepository.kt` — Anthropic API calls
-- `app/src/main/java/com/stanley/reddittldr/ui/overlay/SummaryOverlay.kt` — summary card UI
-- `app/src/main/res/xml/accessibility_service_config.xml` — requires `canPerformGestures="true"`
+- app/src/main/java/com/stanley/reddittldr/reddit/PostExtractor.kt — scroll-and-capture engine
+- app/src/main/java/com/stanley/reddittldr/service/BubbleService.kt — floating bubble lifecycle
+- app/src/main/java/com/stanley/reddittldr/service/RedditWatcherService.kt — AccessibilityService entry point
+- app/src/main/java/com/stanley/reddittldr/api/ClaudeRepository.kt — Anthropic API calls
+- app/src/main/java/com/stanley/reddittldr/ui/overlay/SummaryOverlay.kt — summary card UI
+- app/src/main/res/xml/accessibility_service_config.xml — requires canPerformGestures="true"
 
-## Important implementation notes for AI agents
+## Important implementation notes for AI coding agents
 
-- `android:canPerformGestures="true"` must be in `accessibility_service_config.xml` — without it, `dispatchGesture` is silently no-oped (callback never fires, coroutine hangs)
-- `dispatchGesture` must receive a `Handler(Looper.getMainLooper())` as the third argument when called from a background coroutine (`Dispatchers.Default`), otherwise the callback is dropped
-- After any change to the accessibility service XML config, users must toggle the service off and on in Settings → Accessibility for the new capability to take effect
-- Use `ACTION_SCROLL_DOWN.id` (vertical only) if you ever reintroduce action-based scrolling — `ACTION_SCROLL_FORWARD` matches horizontal pagers in Reddit and pages to the next post mid-extraction
-- The Gradle build cache can serve stale bytecode after `git revert` — always pass `--no-build-cache` after reverting to force recompilation
+- android:canPerformGestures="true" must be in accessibility_service_config.xml —
+  without it, dispatchGesture is silently no-oped (callback never fires, coroutine hangs)
+- dispatchGesture must receive a Handler(Looper.getMainLooper()) as the third argument
+  when called from a background coroutine (Dispatchers.Default), otherwise the callback
+  is dropped
+- After any change to the accessibility service XML config, users must toggle the service
+  off and on in Settings → Accessibility for the new capability to take effect
+- Use ACTION_SCROLL_DOWN.id (vertical only) if you ever reintroduce action-based scrolling
+  — ACTION_SCROLL_FORWARD matches horizontal pagers in Reddit and pages to the next post
+  mid-extraction
+- The Gradle build cache can serve stale bytecode after git revert — always pass
+  --no-build-cache after reverting to force recompilation
+- The bubble must be set FLAG_NOT_TOUCHABLE during extraction, or dispatched gestures are
+  absorbed by the bubble window instead of passing through to Reddit
 
 ## Architecture decision log
 
-See `CLAUDE.md` at the repo root for the full agent memory log (shared between Claude Code and OpenAI Codex), including every meaningful change, why it was made, and failed approaches that should not be retried.
+See CLAUDE.md at the repo root for the full agent memory log (shared between Claude Code
+and OpenAI Codex), including every meaningful change, why it was made, and failed
+approaches that should not be retried.
 
-## Optional: full docs
+## Full docs
 
-- `CLAUDE.md` — complete architecture reference, extraction rules, anti-patterns, agent log
-- `README.md` — user-facing documentation
+- CLAUDE.md — complete architecture reference, extraction rules, anti-patterns, agent log
+- README.md — user-facing documentation
+- docs/llms.txt — LLM reference for the GitHub Pages site (same-origin)
+- docs/llms-full.txt — extended reference with full implementation details
+- Website: https://stanley-projects.github.io/RedditTLDR/
+- Repository: https://github.com/stanley-projects/RedditTLDR
