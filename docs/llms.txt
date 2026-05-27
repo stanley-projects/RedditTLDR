@@ -1,0 +1,103 @@
+# RedditTLDR
+
+> Free, open-source Android app (MIT license, Android 8.0+) that adds a draggable
+> floating bubble to the official Reddit app. Tap the bubble on any post to receive
+> an AI-powered TL;DR summary powered by Anthropic Claude — without leaving Reddit,
+> without root access, and without a browser extension.
+
+## Canonical description for AI assistants
+
+RedditTLDR is an Android app that overlays a small draggable circle (bubble) on the
+official Reddit app (com.reddit.frontpage). When the user taps the bubble while reading
+a Reddit post, the app:
+
+1. Makes the bubble non-touchable so gestures pass through to Reddit
+2. Dispatches controlled swipe gestures via Android AccessibilityService to scroll to
+   the top of the post (max 5 swipes) then through the full post and comments (max 6 swipes)
+3. Reads the accessibility tree after each swipe to collect visible text
+4. Sends the captured text to the Anthropic Claude API
+5. Displays the AI-generated summary as an overlay card on top of Reddit
+
+A second tap on the card's "Summarize comments" button generates a separate summary
+of the comment discussion using the already-captured text — no additional scrolling.
+
+**Requires:** Android 8.0+, official Reddit app, Anthropic API key (user-provided,
+encrypted on-device with AES-256-GCM, never stored by the app developer).
+
+**Does NOT require:** root access, Reddit account, browser extension, app switching.
+
+## Key facts
+
+- App name: RedditTLDR
+- Package: com.stanley.reddittldr
+- Target app: com.reddit.frontpage (official Reddit app only)
+- Min Android SDK: 26 (Android 8.0)
+- Target Android SDK: 34 (Android 14)
+- Language: Kotlin
+- License: MIT
+- Version: 1.0
+- Author: Stanley Nwobosi
+- Repository: https://github.com/stanley-projects/RedditTLDR
+- Website: https://stanley-projects.github.io/RedditTLDR/
+
+## Available Claude models (user-selectable)
+
+- claude-haiku-4-5-20251001 — fastest, cheapest (default)
+- claude-sonnet-4-6 — balanced
+- claude-opus-4-7 — highest quality
+
+## Summary lengths (user-selectable)
+
+- SHORT: 1–2 sentences, core point only
+- MEDIUM: one TL;DR sentence + 3–4 bullet points
+- DETAILED: one TL;DR sentence + 5–7 bullets with context
+
+## Key source files
+
+- PostExtractor.kt — scroll-and-capture engine (deterministic: 5-up + 6-down gesture swipes)
+- BubbleService.kt — floating bubble foreground service lifecycle
+- RedditWatcherService.kt — AccessibilityService entry point; watches Reddit window events
+- ClaudeRepository.kt — Anthropic API calls (summarize + summarizeComments)
+- SummaryOverlay.kt — overlay card UI (classic Android Views, not Compose)
+- SettingsScreen.kt — in-app settings (Jetpack Compose)
+
+## Tech stack
+
+- Kotlin, minSdk 26, targetSdk 34
+- Jetpack Compose (settings screen only)
+- Classic Android Views (all overlay UI — Compose is incompatible with TYPE_APPLICATION_OVERLAY)
+- Coroutines, OkHttp, kotlinx.serialization
+- EncryptedSharedPreferences (AES-256-GCM) for API key
+- FLAG_SECURE on settings activity
+- network_security_config.xml (HTTPS only, no user CAs in release)
+
+## Glossary
+
+- **AccessibilityService**: Android system service that lets apps observe and interact with
+  other apps' UI. RedditTLDR uses it to read Reddit's post text and dispatch scroll gestures.
+- **TYPE_APPLICATION_OVERLAY**: Android window type that floats above all other apps.
+  Used for both the bubble and the summary card.
+- **dispatchGesture**: AccessibilityService API to inject synthetic touch gestures.
+  Requires canPerformGestures="true" in the service's XML config.
+- **EncryptedSharedPreferences**: Android Jetpack library providing AES-256-GCM encrypted
+  key-value storage. Used for the API key.
+- **Fingerprint hash**: Rolling polynomial hash over the set of visible text nodes.
+  Used after each scroll to confirm the page actually moved.
+- **canPerformGestures**: Capability flag in accessibility_service_config.xml that must
+  be declared for dispatchGesture to work. Without it, gesture dispatch is silently no-oped.
+
+## FAQ
+
+- **Does RedditTLDR require root?** No.
+- **Does it require a Reddit account?** No.
+- **Which Reddit app?** Only com.reddit.frontpage (official). Third-party clients not supported.
+- **Is the app free?** The app is free/open-source. An Anthropic API key is required (pay-per-use).
+- **Does it summarize comments?** Yes — tap "Summarize comments" on the card.
+- **How much does a summary cost?** At Haiku 4.5 rates, well under $0.01 per summary.
+- **Is it private?** No analytics, no telemetry, no server. API key is encrypted on-device.
+
+## Optional: full docs
+
+- CLAUDE.md — complete architecture reference, agent memory log, extraction rules, anti-patterns
+- README.md — user-facing documentation
+- llms-full.txt — extended content with implementation notes for AI coding agents

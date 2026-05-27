@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <circle cx="16" cy="16" r="16" fill="#19141C"/>
+  <circle cx="16" cy="16" r="13" fill="#2A2C32"/>
+  <circle cx="16" cy="16" r="11" fill="none" stroke="#D4B26B" stroke-width="1.5"/>
+  <!-- Lightning bolt / TL;DR symbol -->
+  <text x="16" y="21" font-family="Georgia, serif" font-size="13" font-weight="bold" fill="#F6F4F0" text-anchor="middle">R</text>
+</svg>

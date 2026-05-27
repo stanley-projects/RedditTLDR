@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#19141C"/>
+      <stop offset="100%" stop-color="#1F1929"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4B26B" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#D4B26B" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="0" y1="315" x2="1200" y2="315" stroke="#3D3F47" stroke-width="0.5" opacity="0.4"/>
+  <line x1="600" y1="0" x2="600" y2="630" stroke="#3D3F47" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- Left accent: bubble illustration -->
+  <g transform="translate(140, 315)">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="88" fill="none" stroke="#D4B26B" stroke-width="2" opacity="0.6"/>
+    <!-- Inner fill -->
+    <circle cx="0" cy="0" r="72" fill="#2A2C32" opacity="0.9"/>
+    <!-- Inner ring -->
+    <circle cx="0" cy="0" r="72" fill="none" stroke="#3D3F47" stroke-width="1"/>
+    <!-- R letter -->
+    <text x="0" y="14" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="bold" fill="#F6F4F0" text-anchor="middle">R</text>
+    <!-- Gold dot below R -->
+    <circle cx="0" cy="42" r="5" fill="#D4B26B"/>
+  </g>
+
+  <!-- Glow strip behind title -->
+  <rect x="240" y="190" width="840" height="120" fill="url(#glow)" rx="4"/>
+
+  <!-- Main title -->
+  <text x="290" y="280" font-family="Georgia, 'Times New Roman', serif" font-size="86" font-weight="bold" fill="#F6F4F0" letter-spacing="-1">Reddit</text>
+  <text x="756" y="280" font-family="Georgia, 'Times New Roman', serif" font-size="86" font-weight="bold" fill="#D4B26B" letter-spacing="-1">TLDR</text>
+
+  <!-- Hairline under title -->
+  <line x1="290" y1="302" x2="960" y2="302" stroke="#3D3F47" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="290" y="344" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" fill="#D6D2C8" letter-spacing="0.3">Summarize any Reddit post with a tap — powered by Claude AI</text>
+
+  <!-- Bullets row -->
+  <g transform="translate(290, 396)">
+    <!-- Bullet 1 -->
+    <circle cx="6" cy="-4" r="4" fill="#D4B26B"/>
+    <text x="20" y="0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" fill="#8B847A">No root required</text>
+    <!-- Bullet 2 -->
+    <circle cx="176" cy="-4" r="4" fill="#D4B26B"/>
+    <text x="190" y="0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" fill="#8B847A">No browser extension</text>
+    <!-- Bullet 3 -->
+    <circle cx="392" cy="-4" r="4" fill="#D4B26B"/>
+    <text x="406" y="0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" fill="#8B847A">Android 8.0+</text>
+    <!-- Bullet 4 -->
+    <circle cx="518" cy="-4" r="4" fill="#D4B26B"/>
+    <text x="532" y="0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" fill="#8B847A">Open source</text>
+  </g>
+
+  <!-- Bottom: URL -->
+  <text x="290" y="570" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#3D3F47" letter-spacing="1">stanley-projects.github.io/RedditTLDR</text>
+
+  <!-- Bottom right: platform badge -->
+  <rect x="920" y="545" width="190" height="38" rx="8" fill="#2A2C32" stroke="#3D3F47" stroke-width="1"/>
+  <text x="1015" y="569" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#6FB87A" text-anchor="middle" letter-spacing="0.5">ANDROID 8.0+  •  FREE</text>
+
+  <!-- Border -->
+  <rect x="1" y="1" width="1198" height="628" fill="none" stroke="#3D3F47" stroke-width="2" rx="2"/>
+</svg>

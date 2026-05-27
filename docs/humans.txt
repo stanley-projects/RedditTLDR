@@ -1,0 +1,15 @@
+/* TEAM */
+Developer: Stanley Nwobosi
+Contact: https://github.com/stanley-projects
+Location: Earth
+
+/* THANKS */
+Anthropic Claude — for powering the summaries and helping build this app
+Android AccessibilityService team — for making this kind of overlay app possible
+
+/* SITE */
+Last update: 2026-05-27
+Language: English
+Standards: HTML5, CSS3
+Hosted on: GitHub Pages
+Source: https://github.com/stanley-projects/RedditTLDR

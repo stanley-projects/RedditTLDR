@@ -1,0 +1,221 @@
+# RedditTLDR — Full LLM Reference
+
+> Extended reference for AI coding agents, researchers, and power users.
+> See llms.txt for the concise version.
+
+## Project overview
+
+RedditTLDR is an open-source Android app that provides AI-powered summarization of
+Reddit posts via a floating bubble overlay. The user taps a draggable bubble that
+appears over the official Reddit app; the app scrolls through the post, captures text
+via Android's AccessibilityService, sends it to Anthropic's Claude API, and displays
+a summary card as an overlay — all without leaving the Reddit app.
+
+**Repository:** https://github.com/stanley-projects/RedditTLDR
+**Website:** https://stanley-projects.github.io/RedditTLDR/
+**License:** MIT — Copyright (c) 2026 Stanley Nwobosi
+**Android package:** com.stanley.reddittldr
+
+## Architecture
+
+Three runtime pieces:
+
+### 1. RedditWatcherService (AccessibilityService)
+- Watches TYPE_WINDOW_STATE_CHANGED events
+- When com.reddit.frontpage comes to the foreground: starts BubbleService
+- When Reddit leaves foreground: stops BubbleService
+- Holds a userDismissed flag (survives intra-Reddit navigation; resets on genuine Reddit exit)
+- Owns the public entry point for post extraction: extractCurrentPost()
+- Filters events by package name to avoid reacting to its own overlay windows
+
+### 2. BubbleService (foreground Service)
+- Owns the floating bubble window, dismiss target, and summary overlay
+- On bubble tap:
+  1. Shows loading spinner
+  2. Calls setBubbleTouchable(false) — makes bubble non-touchable during extraction
+  3. Calls PostExtractor.extract() — scrolls and captures text
+  4. Calls ClaudeRepository.summarize() — sends to Claude API
+  5. Mounts SummaryOverlay with the result
+  6. Restores bubble touchability in finally block
+- setBubbleTouchable(false/true) toggles FLAG_NOT_TOUCHABLE on the bubble window via updateViewLayout
+
+### 3. PostExtractor (AccessibilityService tree reader)
+Single-strategy reader — no fallbacks. Gesture-based scrolling only.
+
+Flow inside extract():
+1. redditRoots() — collects every service.windows root whose package matches com.reddit.*
+   (Modern Reddit UI spans multiple sibling windows: toolbar, body, comment sheet, etc.)
+2. findPostIdAcross(roots) — best-effort base36 post ID from view tags / hyperlinks
+3. readFromScreen(postId) — the main capture:
+   - Phase 1: scroll UP up to MAX_UP_SCROLLS=5 without capturing (position to top)
+   - Phase 2: merge visible text, scroll DOWN up to MAX_DOWN_SCROLLS=6, merge after each step
+   - Phase 3: build PostContent from the deduped ordered set
+   - Body: full capture including comment section (no split at extraction time)
+   - Differentiation between body and comments is done by Claude's system prompt
+
+### SummaryOverlay
+- Classic Android Views (not Compose — Compose is incompatible with TYPE_APPLICATION_OVERLAY windows)
+- Scrollable summary card
+- "Summarize comments" button — uses post.body (the full capture) directly, no second scroll
+- Copy button — exports post + comments summary as plain text
+- tap-outside-to-dismiss scrim
+
+## Critical implementation details for AI coding agents
+
+### dispatchGesture requirements
+- MUST declare android:canPerformGestures="true" in accessibility_service_config.xml
+  WITHOUT this: dispatchGesture is silently no-oped, callback never fires, coroutine hangs
+- MUST pass Handler(Looper.getMainLooper()) as third argument
+  WITHOUT this (null or from Dispatchers.Default background thread): callback silently dropped
+- After updating accessibility_service_config.xml: user MUST toggle service off/on in
+  Settings → Accessibility. Android caches service capabilities on first bind.
+- Always wrap dispatchGesture in withTimeoutOrNull(3000L) as safety net
+
+### Bubble touchability during extraction
+- The bubble window has touch handlers (for dragging)
+- dispatchGesture sends gestures at screen coordinates
+- If the bubble sits anywhere in the gesture path, it absorbs the touch event
+- Fix: setBubbleTouchable(false) BEFORE starting extraction, restored in finally block
+- FLAG_NOT_TOUCHABLE allows touches to pass through the bubble window to Reddit below
+
+### Scroll gesture specs
+- Direction DOWN (scroll page down / reveal content below): yStart=78% → yEnd=28%
+- Direction UP (scroll page up / reveal content above): yStart=28% → yEnd=78%
+- Gesture duration: GESTURE_DURATION_MS=500L
+- Wait after each gesture: SCROLL_WAIT_MS=500L
+- Extra settle if fingerprint unchanged: EXTRA_SCROLL_SETTLE_MS=500L
+- These 500ms values are load-bearing on the test device — do not reduce without profiling
+
+### Fingerprint-based movement detection
+- visibleFingerprint(): rolling polynomial hash (h = 31*h + text.hashCode()) over visible text set
+- scrollOneStep(direction): dispatch gesture → wait SCROLL_WAIT_MS → compare fingerprints
+  If unchanged: wait EXTRA_SCROLL_SETTLE_MS → compare again
+  Returns true only if fingerprint changed (page actually moved)
+
+### Why gestures instead of ACTION_SCROLL_DOWN
+- ACTION_SCROLL_DOWN targets the largest scrollable widget by area
+- On Reddit's post screen, the largest scrollable is the comments LazyColumn, NOT the post body
+- Using ACTION_SCROLL_DOWN scrolled comments while the post body stayed fixed
+- Gesture-based scrolling hits whatever is under the touch point (screen center)
+
+### Claude prompt design
+- Post summary system prompt: "input will likely include comment-section text after post body.
+  IGNORE comment-section content entirely and summarize ONLY what the original poster (OP) wrote"
+- Comments summary prompt: "focus ONLY on the COMMENTS — what people are saying in the
+  discussion below the post — NOT what the original poster wrote"
+- Both prompts receive the same full capture blob (post + comments)
+- Differentiation is done at the prompt level, not at extraction time
+
+### Why no body/comment split at extraction time
+- Reddit's comment-section header text varies between app versions
+- Early attempts used marker strings ("sort by:", "be the first to comment", etc.)
+- A false positive truncated the body to near-zero (bodyLen=18 chars)
+- A missed marker let comments bleed into the post summary
+- Current approach: capture everything, let Claude differentiate via prompt
+
+### Gradle build cache
+- After git revert, always pass --no-build-cache to force recompilation
+- ./gradlew assembleDebug --no-build-cache
+- Gradle's incremental cache serves stale bytecode even after source is correct
+
+### ACTION_SCROLL_FORWARD warning
+- ACTION_SCROLL_FORWARD matches Reddit's horizontal post-swipe pager
+- Using it mid-extraction navigates to the NEXT POST
+- Only use ACTION_SCROLL_DOWN.id for vertical scrolling
+
+## File map
+
+```
+app/src/main/
+├── AndroidManifest.xml              — permissions + service declarations
+├── java/com/stanley/reddittldr/
+│   ├── MainActivity.kt              — Compose settings host
+│   ├── api/
+│   │   ├── ClaudeRepository.kt      — summarize() + summarizeComments()
+│   │   └── models/                  — ClaudeRequest, ClaudeResponse, ClaudeErrorEnvelope
+│   ├── data/
+│   │   ├── ClaudeModel.kt           — Haiku/Sonnet/Opus enum with API IDs
+│   │   ├── SettingsRepository.kt    — EncryptedSharedPreferences wrapper
+│   │   └── SummaryLength.kt         — SHORT/MEDIUM/DETAILED enum
+│   ├── reddit/
+│   │   ├── PostContent.kt           — extraction result (body, title, subreddit, isPartial)
+│   │   ├── PostExtractor.kt         — scroll-and-capture engine
+│   │   └── RedditJsonClient.kt      — unused in main path; kept for post-ID lookup
+│   ├── service/
+│   │   ├── BubbleService.kt         — bubble + overlay lifecycle
+│   │   └── RedditWatcherService.kt  — AccessibilityService entry point
+│   ├── ui/
+│   │   ├── OnboardingSection.kt     — permission rows (Compose)
+│   │   ├── SettingsScreen.kt        — full settings screen (Compose)
+│   │   └── overlay/
+│   │       ├── BubbleView.kt        — draggable circle view
+│   │       ├── DismissScrimView.kt  — gradient scrim on drag
+│   │       ├── DismissTargetView.kt — X dismiss target
+│   │       └── SummaryOverlay.kt    — summary card (Views, not Compose)
+│   └── util/
+│       ├── DebugLog.kt              — in-memory ring log + file flush
+│       └── PermissionState.kt
+└── res/
+    ├── xml/
+    │   ├── accessibility_service_config.xml  — MUST have canPerformGestures="true"
+    │   ├── data_extraction_rules.xml          — excludes API key from backups
+    │   └── network_security_config.xml        — HTTPS only, no user CAs
+    └── values/
+        ├── colors.xml    — OKLCH-derived palette (card_bg, accent_dot, text_primary, etc.)
+        ├── strings.xml
+        └── themes.xml    — transparent status/nav bar, windowLightStatusBar=false
+```
+
+## Color palette (from colors.xml)
+
+| Token | Hex | Use |
+|---|---|---|
+| background | #19141C | App background |
+| card_bg | #2A2C32 | Overlay card, settings sections |
+| surface_card_hairline | #3D3F47 | Borders, dividers |
+| text_primary | #F6F4F0 | Primary text |
+| text_secondary | #D6D2C8 | Body text |
+| text_tertiary | #8B847A | Captions, labels |
+| accent_dot | #D4B26B | Gold accent, CTA |
+| status_captured | #6FB87A | Success / "Granted" states |
+| btn_primary_bg | #F6F4F0 | Primary button background |
+| partial_amber | #D4B26B | Partial-content warning |
+
+## Known limitations
+
+- Only works with com.reddit.frontpage (official Reddit app)
+- Long posts (7+ screenfuls) hit the scroll cap (MAX_DOWN_SCROLLS=6)
+- 500ms per scroll step = ~6 seconds total for a full 6-scroll capture
+- Comments summarization quality depends on how many comments were visible during scroll
+- findPostIdAcross() often returns null on modern Reddit builds (post ID not in accessibility tree)
+
+## What has been tried and removed
+
+- Comments/{id}.json as the primary extractor (failed on many post types)
+- Compose semantic-node walking by resource ID (fragile against Reddit version bumps)
+- Share-sheet flow (required app switching)
+- Reading from a single Reddit window root (missed most content)
+- ACTION_SCROLL_DOWN for scrolling (scrolled wrong widget)
+- Marker-based body/comment split at extraction time (false positives and missed splits)
+- Stagnant-count heuristic for stopping scrolls (couldn't distinguish "no new content" from "duplicates of captured content")
+- Anchored-action scrolling (scrolled the body container one full page per step, skipping middle)
+- Adaptive/faster timing (350ms broke scroll detection on test device)
+
+## Build
+
+```bash
+# Requires JBR from Android Studio
+JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew assembleDebug
+
+# After git revert — force recompile
+./gradlew assembleDebug --no-build-cache
+
+# APK output
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Agent log
+
+See CLAUDE.md at the repo root for the complete dated agent log with entries from
+[Claude] and [Codex] covering every meaningful change, failed attempt, and architectural
+decision since the project started.

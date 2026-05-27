@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedditTLDR — Summarize Any Reddit Post in One Tap | Android App</title>
+  <meta name="description" content="RedditTLDR is a free Android app that adds a floating bubble to the Reddit app. Tap it on any post for an AI-powered summary in seconds — no root, no browser extension, no app switching.">
+  <meta name="keywords" content="reddit summarizer, summarize reddit posts, reddit tldr app, ai reddit summary, reddit post summary app, summarize long reddit threads, android reddit summary, reddit summary no extension, no root reddit summarizer, claude api android app">
+  <meta name="author" content="Stanley Nwobosi">
+  <meta name="theme-color" content="#19141C">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://stanley-projects.github.io/RedditTLDR/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stanley-projects.github.io/RedditTLDR/">
+  <meta property="og:title" content="RedditTLDR — Summarize Any Reddit Post in One Tap">
+  <meta property="og:description" content="A free Android app that overlays a draggable bubble on the Reddit app. Tap it on any post to get an AI-powered TL;DR summary powered by Claude — without leaving Reddit, without root, without a browser extension.">
+  <meta property="og:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="RedditTLDR — AI-powered Reddit post summarizer for Android">
+  <meta property="og:site_name" content="RedditTLDR">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RedditTLDR — Summarize Any Reddit Post in One Tap">
+  <meta name="twitter:description" content="Free Android app: floating bubble over Reddit → tap → AI summary powered by Claude. No root, no extension.">
+  <meta name="twitter:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+  <meta name="twitter:image:alt" content="RedditTLDR Android app — AI Reddit summarizer">
+
+  <!-- JSON-LD: MobileApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "RedditTLDR",
+    "description": "A free Android app that adds a draggable floating bubble to the official Reddit app. Tap the bubble on any post to receive an AI-powered TL;DR summary powered by Claude — without leaving Reddit, without root access, and without a browser extension.",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Android 8.0+",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "softwareVersion": "1.0",
+    "downloadUrl": "https://github.com/stanley-projects/RedditTLDR/releases",
+    "installUrl": "https://github.com/stanley-projects/RedditTLDR/releases",
+    "softwareRequirements": "Android 8.0 (API 26) or higher; official Reddit app (com.reddit.frontpage); Anthropic API key",
+    "author": {
+      "@type": "Person",
+      "name": "Stanley Nwobosi",
+      "url": "https://github.com/stanley-projects"
+    },
+    "screenshot": "https://stanley-projects.github.io/RedditTLDR/og-image.svg",
+    "featureList": [
+      "Floating bubble overlay on the Reddit app",
+      "AI-powered post summarization via Anthropic Claude API",
+      "Comment thread summarization",
+      "Short, Medium, and Detailed summary lengths",
+      "Claude Haiku 4.5, Sonnet 4.6, and Opus 4.7 model selection",
+      "Drag-to-dismiss bubble",
+      "Copy summary to clipboard",
+      "No root required",
+      "API key stored with AES-256-GCM encryption on-device",
+      "No analytics, no telemetry"
+    ],
+    "url": "https://stanley-projects.github.io/RedditTLDR/",
+    "sameAs": "https://github.com/stanley-projects/RedditTLDR",
+    "license": "https://opensource.org/licenses/MIT"
+  }
+  </script>
+
+  <!-- JSON-LD: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I summarize Reddit posts on Android?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install RedditTLDR, grant Accessibility Service and overlay permissions, add your Anthropic Claude API key in settings, then open the official Reddit app. A floating bubble appears automatically. Tap the bubble on any post and you receive an AI-powered summary in about 3 seconds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RedditTLDR require root access?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. RedditTLDR uses Android's standard AccessibilityService and overlay (SYSTEM_ALERT_WINDOW) APIs, both of which are available on any unrooted Android 8.0+ device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Reddit app does RedditTLDR work with?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RedditTLDR works with the official Reddit app (package com.reddit.frontpage). Third-party Reddit clients are not supported because the accessibility tree structure varies between apps."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Claude API key and where do I get one?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Claude API key lets you call Anthropic's AI models. Get one at console.anthropic.com. You are billed by Anthropic for usage — the default model (Haiku 4.5) costs fractions of a cent per summary."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is RedditTLDR free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The app is free and open-source (MIT license). It requires your own Anthropic API key, and Anthropic charges for API usage at their standard rates. At Haiku 4.5 rates, each summary costs well under $0.01."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I summarize Reddit comments too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. After the post summary appears, tap Summarize comments on the card. The app generates a separate bullet-point summary of the discussion using the same already-captured text — no additional scrolling or API round-trip needed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does RedditTLDR summarize posts without a browser extension?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RedditTLDR uses Android's AccessibilityService to read the post text directly from the Reddit app's UI, then sends that text to the Anthropic Claude API. The summary appears as a floating overlay card — no browser extension, no copy-paste, no app switching required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What Android version do I need for RedditTLDR?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Android 8.0 (API level 26) or higher."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #19141C;
+      --surface: #2A2C32;
+      --surface-2: #32353E;
+      --text: #F6F4F0;
+      --text-2: #D6D2C8;
+      --text-3: #8B847A;
+      --accent: #D4B26B;
+      --green: #6FB87A;
+      --hairline: #3D3F47;
+      --radius: 14px;
+      --max: 860px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(25,20,28,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--hairline);
+    }
+    .nav-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      font-size: 13px;
+      color: var(--text-3);
+      letter-spacing: 0.2px;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Sections */
+    section { padding: 72px 24px; max-width: var(--max); margin: 0 auto; }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .eyebrow::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+    }
+    h1 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -1px;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    h1 em { color: var(--accent); font-style: normal; }
+    h2 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    p { color: var(--text-2); margin-bottom: 16px; }
+    .lead {
+      font-size: clamp(16px, 2.5vw, 19px);
+      color: var(--text-2);
+      max-width: 600px;
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    /* Hero */
+    .hero { padding-top: 96px; padding-bottom: 80px; }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--text);
+      color: #1F2128;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 13px 26px;
+      border-radius: 10px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; text-decoration: none; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--hairline);
+      color: var(--text-2);
+      font-size: 14px;
+      padding: 13px 26px;
+      border-radius: 10px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--text-3); color: var(--text); text-decoration: none; }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .badge .dot-green { background: var(--green); }
+    .badge .dot-gold { background: var(--accent); }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--hairline); margin: 0; }
+
+    /* Features grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .feature-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    .feature-card h3 { font-size: 15px; margin-bottom: 6px; }
+    .feature-card p { font-size: 14px; color: var(--text-3); margin: 0; }
+
+    /* How it works */
+    .steps { margin-top: 32px; }
+    .step {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+    .step-body h3 { font-size: 15px; margin-bottom: 4px; }
+    .step-body p { font-size: 14px; color: var(--text-3); margin: 0; }
+
+    /* Requirements */
+    .req-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+    }
+    .req-table th, .req-table td {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .req-table th {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      background: var(--surface);
+    }
+    .req-table tr:last-child td { border-bottom: none; }
+    .req-table td:first-child { color: var(--text); font-weight: 500; }
+    .req-table td:last-child { color: var(--text-2); }
+
+    /* FAQ */
+    .faq-list { margin-top: 32px; }
+    details {
+      border-bottom: 1px solid var(--hairline);
+      padding: 20px 0;
+    }
+    details:first-child { border-top: 1px solid var(--hairline); }
+    summary {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: '+';
+      font-size: 20px;
+      color: var(--accent);
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--text-3);
+      margin-bottom: 0;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--hairline);
+      padding: 40px 24px;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .footer-left { font-size: 13px; color: var(--text-3); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { font-size: 13px; color: var(--text-3); }
+    .footer-links a:hover { color: var(--text); text-decoration: none; }
+    .keyword-footer {
+      margin-top: 20px;
+      font-size: 11px;
+      color: #3D3F47;
+      line-height: 1.8;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      section { padding: 48px 20px; }
+      .hero { padding-top: 56px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">Reddit<span>TLDR</span></span>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="summarize-reddit-posts.html">Guide</a>
+      <a href="install.html">Install</a>
+      <a href="faq.html">FAQ</a>
+      <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="eyebrow">AI Reddit Summarizer for Android</div>
+  <h1>Summarize any Reddit post in <em>one tap</em></h1>
+  <p class="lead">
+    RedditTLDR adds a draggable floating bubble to the Reddit app. Tap it on
+    any post — get a concise AI summary powered by Claude in about 3 seconds.
+    No root required. No browser extension. Never leave Reddit.
+  </p>
+  <div class="hero-ctas">
+    <a class="btn-primary" href="install.html">
+      ↓ Download APK
+    </a>
+    <a class="btn-ghost" href="https://github.com/stanley-projects/RedditTLDR">
+      View on GitHub
+    </a>
+    <a class="btn-ghost" href="summarize-reddit-posts.html">
+      How to use →
+    </a>
+  </div>
+  <div class="badge-row">
+    <span class="badge"><span class="dot dot-green"></span>Android 8.0+</span>
+    <span class="badge"><span class="dot dot-gold"></span>Powered by Claude AI</span>
+    <span class="badge"><span class="dot dot-green"></span>No root required</span>
+    <span class="badge">Open source · MIT</span>
+    <span class="badge">Requires Anthropic API key</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Features -->
+<section id="features">
+  <div class="eyebrow">What you get</div>
+  <h2>Everything you need to tame long Reddit posts</h2>
+  <p>Built for the official Reddit app. Works entirely on your device — your API key, your data.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>One-tap post summary</h3>
+      <p>Tap the bubble on any post. Get 1–7 bullets covering the key points in ~3 seconds.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗨️</div>
+      <h3>Comment summarization</h3>
+      <p>Tap "Summarize comments" for a separate AI summary of the discussion thread.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Three summary lengths</h3>
+      <p>Short (1–2 sentences), Medium (TL;DR + bullets), or Detailed (full context).</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>Three Claude models</h3>
+      <p>Haiku 4.5 (fastest/cheapest), Sonnet 4.6 (balanced), Opus 4.7 (highest quality).</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🫧</div>
+      <h3>Draggable bubble</h3>
+      <p>Docks to either screen edge. Drag down to the dismiss target to hide it.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Copy to clipboard</h3>
+      <p>Copy the full post + comments summary as plain text with one tap.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Private by design</h3>
+      <p>API key stored with AES-256-GCM encryption. No analytics, no telemetry, no account needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚠️</div>
+      <h3>Partial-content warning</h3>
+      <p>Very long posts (6+ screens) show a banner so you know the summary may be incomplete.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Requirements -->
+<section id="requirements">
+  <div class="eyebrow">Before you start</div>
+  <h2>What you need</h2>
+
+  <table class="req-table">
+    <thead>
+      <tr><th>Requirement</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Android version</td>
+        <td>Android 8.0 (API level 26) or higher</td>
+      </tr>
+      <tr>
+        <td>Reddit app</td>
+        <td>The <a href="https://play.google.com/store/apps/details?id=com.reddit.frontpage">official Reddit app</a> from the Play Store (<code>com.reddit.frontpage</code>)</td>
+      </tr>
+      <tr>
+        <td>Anthropic API key</td>
+        <td>Get one free at <a href="https://console.anthropic.com">console.anthropic.com</a>. You pay Anthropic directly — Haiku 4.5 costs fractions of a cent per summary</td>
+      </tr>
+      <tr>
+        <td>Permissions</td>
+        <td>Accessibility Service, Display over other apps, Notifications (Android 13+)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider">
+
+<!-- How it works -->
+<section id="how-it-works">
+  <div class="eyebrow">Under the hood</div>
+  <h2>How RedditTLDR summarizes Reddit posts</h2>
+  <p>No Reddit API, no OAuth, no account needed. Just Android's accessibility layer and your own Claude key.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Bubble appears over Reddit</h3>
+        <p>When the official Reddit app is in the foreground, the AccessibilityService automatically starts a foreground service that draws the draggable bubble.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Tap the bubble</h3>
+        <p>The bubble becomes non-touchable so dispatched gestures pass through to Reddit. The extraction engine begins scrolling.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Post is captured automatically</h3>
+        <p>The app swipes up to the post top (max 5 swipes), then swipes down through the full post and comments (max 6 swipes), reading the accessibility tree after each step. A fingerprint hash confirms each swipe actually moved the page.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Claude generates the summary</h3>
+        <p>The captured text is sent to Anthropic's Claude API with a prompt that tells the model to summarize only the post body and ignore the comment section. The summary appears on the overlay card.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Optional: summarize comments</h3>
+        <p>Tap "Summarize comments" on the card. Claude uses the already-captured text to summarize the discussion — no second scroll, no second API call.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="eyebrow">Common questions</div>
+  <h2>Frequently asked questions</h2>
+  <p>See also the <a href="faq.html">full FAQ page</a>.</p>
+
+  <div class="faq-list">
+    <details open>
+      <summary>How do I summarize Reddit posts on Android?</summary>
+      <p>Install RedditTLDR, grant Accessibility Service and overlay permissions, add your Anthropic API key in settings, then open the official Reddit app. A floating bubble appears automatically — tap it on any post to get an AI summary in about 3 seconds.</p>
+    </details>
+    <details>
+      <summary>Does RedditTLDR require root access?</summary>
+      <p>No. RedditTLDR uses Android's standard AccessibilityService and overlay APIs, available on any unrooted Android 8.0+ device. No root, no bootloader unlock, no special permissions beyond what Android provides natively.</p>
+    </details>
+    <details>
+      <summary>Is RedditTLDR free?</summary>
+      <p>The app is free and open-source (MIT license). You need your own Anthropic API key, and Anthropic charges for API usage at their standard rates. At Claude Haiku 4.5 rates, each summary costs well under $0.01.</p>
+    </details>
+    <details>
+      <summary>Can I summarize Reddit comments too?</summary>
+      <p>Yes. After the post summary card appears, tap <strong>Summarize comments</strong>. The app uses the same screen-captured text to generate a separate summary of the comment discussion — no additional scrolling or network round-trip.</p>
+    </details>
+    <details>
+      <summary>Why does it need the Accessibility Service permission?</summary>
+      <p>RedditTLDR uses AccessibilityService to read on-screen text from the Reddit app and dispatch scroll gestures. This is the only way to capture post content without a Reddit API integration. The service only activates when the Reddit app is in the foreground.</p>
+    </details>
+    <details>
+      <summary>Does it work with third-party Reddit apps like Apollo or Relay?</summary>
+      <p>No. RedditTLDR is designed for the official Reddit app (<code>com.reddit.frontpage</code>). Third-party Reddit clients have different accessibility tree structures and are not supported.</p>
+    </details>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      © 2026 Stanley Nwobosi · MIT License
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+      <a href="install.html">Install</a>
+      <a href="faq.html">FAQ</a>
+      <a href="summarize-reddit-posts.html">Guide</a>
+      <a href="llms.txt">llms.txt</a>
+      <a href="https://github.com/stanley-projects/RedditTLDR/blob/main/CLAUDE.md">CLAUDE.md</a>
+    </div>
+  </div>
+  <div class="keyword-footer">
+    reddit summarizer android · summarize reddit posts · reddit tldr app · ai reddit summary · reddit post summary ·
+    summarize long reddit threads · android overlay · claude api · no root · floating bubble · accessibility service ·
+    reddit summary no extension · open source reddit tool · android productivity app
+  </div>
+</footer>
+
+</body>
+</html>

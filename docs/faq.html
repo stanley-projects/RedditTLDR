@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedditTLDR FAQ — Android Reddit Summarizer Questions Answered</title>
+  <meta name="description" content="Answers to the most common questions about RedditTLDR: does it need root, which Reddit app, how much does it cost, privacy, comment summarization, and more.">
+  <meta name="keywords" content="reddit summarizer faq, does reddit tldr need root, reddit ai summary app questions, reddit summary android permissions, claude api reddit app cost">
+  <meta name="author" content="Stanley Nwobosi">
+  <meta name="theme-color" content="#19141C">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://stanley-projects.github.io/RedditTLDR/faq.html">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://stanley-projects.github.io/RedditTLDR/faq.html">
+  <meta property="og:title" content="RedditTLDR FAQ — All Your Questions Answered">
+  <meta property="og:description" content="Frequently asked questions about RedditTLDR: setup, permissions, cost, privacy, comment summarization, and compatibility.">
+  <meta property="og:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+  <meta property="og:site_name" content="RedditTLDR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RedditTLDR FAQ">
+  <meta name="twitter:description" content="Does it need root? Which Reddit app? How much does it cost? All answered.">
+  <meta name="twitter:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+
+  <!-- JSON-LD: FAQPage (comprehensive) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I summarize Reddit posts on Android?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install RedditTLDR, grant Accessibility Service and overlay permissions, add your Anthropic Claude API key in settings, then open the official Reddit app. A floating bubble appears automatically. Tap the bubble on any post and you receive an AI-powered summary in about 3 seconds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RedditTLDR require root access?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. RedditTLDR uses Android's standard AccessibilityService and overlay (SYSTEM_ALERT_WINDOW) APIs, available on any unrooted Android 8.0+ device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Reddit app does RedditTLDR work with?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RedditTLDR works with the official Reddit app (package com.reddit.frontpage). Third-party Reddit clients such as Apollo, Relay, or Infinity are not supported because their accessibility tree structures differ."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an Anthropic API key and how much does it cost?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An Anthropic API key lets you call Claude AI models. Sign up free at console.anthropic.com and create a key. You are billed by Anthropic per token — at the default Claude Haiku 4.5 rate, each Reddit post summary costs well under $0.01."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is RedditTLDR free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The app itself is free and open-source under the MIT license. You need your own Anthropic API key, and Anthropic charges for usage. At Claude Haiku 4.5 rates, summarizing thousands of posts would cost only a few dollars."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I summarize Reddit comments too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. After the post summary card appears, tap 'Summarize comments'. RedditTLDR uses the same already-captured text to generate a separate bullet-point summary of the discussion thread — no additional scrolling or API call needed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does RedditTLDR need the Accessibility Service permission?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RedditTLDR uses Android's AccessibilityService to read on-screen text from the Reddit app and dispatch scroll gestures. This is the only way to capture post content without a Reddit API integration that would require an account and OAuth. The service only activates when the Reddit app is in the foreground."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What Android version do I need?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Android 8.0 (API level 26) or higher."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my API key safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Your API key is stored using Android's EncryptedSharedPreferences with AES-256-GCM encryption. The settings screen uses FLAG_SECURE so the key never appears in screenshots or the recents screen. The key is excluded from device backups. The only network traffic is from your device directly to Anthropic's API endpoint."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RedditTLDR collect any data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. RedditTLDR has no analytics, no crash reporting, no telemetry, and no server of its own. Nothing is persisted after you close the summary card. The only external network request is your device calling Anthropic's API with the captured post text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if a Reddit post is very long?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RedditTLDR scrolls through up to 6 screens of content. If a post is longer than that, the summary card shows a 'partial content' banner to let you know the summary may not cover everything."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I choose the summary length and AI model?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Open the RedditTLDR settings screen to select: Summary length — Short (1-2 sentences), Medium (TL;DR + bullets), or Detailed (5-7 bullets with full context). Claude model — Haiku 4.5 (fastest, cheapest), Sonnet 4.6 (balanced), or Opus 4.7 (highest quality)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does it need to toggle the accessibility service after installing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Android caches the accessibility service capabilities when the service is first enabled. After installing or updating RedditTLDR, toggling the service off and on in Settings → Accessibility forces Android to pick up any new capabilities (such as the gesture-dispatch capability required for scrolling)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is this different from using a browser extension to summarize Reddit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Browser extensions only work on desktop. RedditTLDR is a native Android app that works inside the mobile Reddit app, so there is nothing to install on a computer and no need to switch devices or browsers."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: Breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "RedditTLDR", "item": "https://stanley-projects.github.io/RedditTLDR/"},
+      {"@type": "ListItem", "position": 2, "name": "FAQ", "item": "https://stanley-projects.github.io/RedditTLDR/faq.html"}
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #19141C; --surface: #2A2C32; --text: #F6F4F0;
+      --text-2: #D6D2C8; --text-3: #8B847A; --accent: #D4B26B;
+      --green: #6FB87A; --hairline: #3D3F47; --max: 760px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.7; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(25,20,28,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--hairline); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { font-size: 13px; color: var(--text-3); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    main { max-width: var(--max); margin: 0 auto; padding: 64px 24px 80px; }
+    .breadcrumb { font-size: 12px; color: var(--text-3); margin-bottom: 32px; }
+    .breadcrumb a { color: var(--text-3); }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .eyebrow::before { content: ''; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; display: inline-block; }
+    h1 { font-family: Georgia, serif; font-size: clamp(28px, 5vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 16px; }
+    h2 { font-family: Georgia, serif; font-size: 18px; font-weight: 700; margin: 48px 0 12px; color: var(--text); border-bottom: 1px solid var(--hairline); padding-bottom: 8px; }
+    p { color: var(--text-2); margin-bottom: 16px; }
+    code { font-family: 'Fira Code', monospace; font-size: 13px; background: var(--surface); padding: 2px 6px; border-radius: 4px; color: var(--text-2); }
+    ul { color: var(--text-2); padding-left: 24px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    .faq-section { margin-bottom: 8px; }
+    .faq-section summary {
+      font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; list-style: none;
+      padding: 20px 0; border-bottom: 1px solid var(--hairline);
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    }
+    .faq-section summary::-webkit-details-marker { display: none; }
+    .faq-section summary::after { content: '+'; font-size: 20px; color: var(--accent); flex-shrink: 0; transition: transform 0.2s; }
+    .faq-section[open] summary::after { transform: rotate(45deg); }
+    .faq-section .faq-answer { padding: 16px 0 20px; border-bottom: 1px solid var(--hairline); }
+    .faq-section .faq-answer p { font-size: 15px; color: var(--text-3); margin-bottom: 10px; }
+    .faq-section .faq-answer p:last-child { margin-bottom: 0; }
+    footer { border-top: 1px solid var(--hairline); padding: 32px 24px; max-width: 900px; margin: 0 auto; font-size: 13px; color: var(--text-3); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+    footer a { color: var(--text-3); }
+    footer a:hover { color: var(--text); text-decoration: none; }
+    @media (max-width: 600px) { .nav-links { display: none; } main { padding: 48px 20px 64px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Reddit<span>TLDR</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="summarize-reddit-posts.html">Guide</a>
+      <a href="install.html">Install</a>
+      <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <nav aria-label="Breadcrumb" class="breadcrumb">
+    <a href="index.html">RedditTLDR</a> › FAQ
+  </nav>
+
+  <div class="eyebrow">Questions &amp; Answers</div>
+  <h1>Frequently Asked Questions</h1>
+  <p style="font-size:17px; color: var(--text-2);">Everything you need to know about RedditTLDR — setup, cost, privacy, and how it works.</p>
+
+  <h2>Getting started</h2>
+
+  <details class="faq-section">
+    <summary>How do I summarize Reddit posts on Android?</summary>
+    <div class="faq-answer">
+      <p>Install RedditTLDR, grant Accessibility Service and overlay permissions, add your Anthropic API key, then open the official Reddit app. A floating bubble appears automatically. Navigate to any post and tap the bubble — you get an AI summary in about 3 seconds.</p>
+      <p>Full walkthrough: <a href="summarize-reddit-posts.html">How to summarize Reddit posts →</a></p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>What do I need before installing?</summary>
+    <div class="faq-answer">
+      <p>Three things:</p>
+      <ul>
+        <li>An Android device running Android 8.0 (API 26) or higher</li>
+        <li>The official Reddit app (<a href="https://play.google.com/store/apps/details?id=com.reddit.frontpage">com.reddit.frontpage</a>) from the Play Store</li>
+        <li>An Anthropic API key from <a href="https://console.anthropic.com">console.anthropic.com</a></li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Where do I download RedditTLDR?</summary>
+    <div class="faq-answer">
+      <p>Download the APK from the <a href="https://github.com/stanley-projects/RedditTLDR/releases">GitHub Releases page</a>. See the <a href="install.html">Install page</a> for step-by-step instructions including how to enable sideloading on Android.</p>
+    </div>
+  </details>
+
+  <h2>Compatibility</h2>
+
+  <details class="faq-section">
+    <summary>Does RedditTLDR require root access?</summary>
+    <div class="faq-answer">
+      <p>No. RedditTLDR uses Android's standard AccessibilityService and overlay APIs, both available on any unrooted Android 8.0+ device. No root, no special firmware, no developer mode required beyond enabling unknown sources for the APK install.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Which Reddit app does it work with?</summary>
+    <div class="faq-answer">
+      <p>Only the <strong>official Reddit app</strong> (<code>com.reddit.frontpage</code>). Third-party clients like Apollo, Relay, Infinity, or Boost are not supported — their accessibility tree structures differ from the official app, so the text-capture and scroll logic wouldn't work reliably.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Does it work on tablets?</summary>
+    <div class="faq-answer">
+      <p>RedditTLDR is designed and tested on phones. It may work on tablets running Android 8.0+ with the official Reddit app, but tablet-specific layouts have not been tested.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    "How is this different from using a browser extension to summarize Reddit?"
+    <summary>How is this different from a browser extension?</summary>
+    <div class="faq-answer">
+      <p>Browser extensions only run on desktop. RedditTLDR is a native Android app — it works inside the mobile Reddit app on your phone with a single tap, no desktop or browser involved.</p>
+    </div>
+  </details>
+
+  <h2>Cost &amp; API key</h2>
+
+  <details class="faq-section">
+    <summary>Is RedditTLDR free?</summary>
+    <div class="faq-answer">
+      <p>The app itself is free and open-source (MIT license). It requires your own Anthropic API key, and Anthropic charges per-token for API usage. At the default Claude Haiku 4.5 rate, each summary costs well under $0.01 — summarizing thousands of posts might cost a couple of dollars total.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>What is a Claude API key?</summary>
+    <div class="faq-answer">
+      <p>An API key from Anthropic lets you call Claude AI models programmatically. Sign up at <a href="https://console.anthropic.com">console.anthropic.com</a> (free account, no subscription required). Create an API key, copy it, and paste it into RedditTLDR's settings. Anthropic bills you directly based on usage.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Which Claude model should I use?</summary>
+    <div class="faq-answer">
+      <p>RedditTLDR supports three models. For most posts, <strong>Haiku 4.5</strong> is the right choice:</p>
+      <ul>
+        <li><strong>Haiku 4.5</strong> — fastest response, cheapest (default). Good for all everyday posts.</li>
+        <li><strong>Sonnet 4.6</strong> — balanced quality and speed. Good for nuanced posts.</li>
+        <li><strong>Opus 4.7</strong> — highest quality, slower and more expensive. For when the post genuinely needs it.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2>Privacy &amp; security</h2>
+
+  <details class="faq-section">
+    <summary>Is my API key safe?</summary>
+    <div class="faq-answer">
+      <p>Yes. Your key is stored using <code>EncryptedSharedPreferences</code> with AES-256-GCM encryption — Android's recommended encrypted storage. The settings screen uses <code>FLAG_SECURE</code> so the key never appears in screenshots or the recents screen. The key is also excluded from device backups.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Does RedditTLDR collect any data?</summary>
+    <div class="faq-answer">
+      <p>No. There is no analytics, no crash reporting, no telemetry, and no server. The only external network traffic is from your device to Anthropic's API endpoint. Nothing is persisted after the summary card is dismissed.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Why does it need Accessibility Service permission?</summary>
+    <div class="faq-answer">
+      <p>AccessibilityService is how RedditTLDR reads on-screen text from the Reddit app and dispatches scroll gestures. This is the only viable approach without a Reddit API integration (which would require an account and OAuth). The service starts <em>only</em> when Reddit is in the foreground and stops when Reddit is closed or backgrounded.</p>
+    </div>
+  </details>
+
+  <h2>How it works</h2>
+
+  <details class="faq-section">
+    <summary>How does RedditTLDR capture the post text?</summary>
+    <div class="faq-answer">
+      <p>When you tap the bubble, the app temporarily makes it non-touchable (so gestures pass through to Reddit), then dispatches a series of controlled swipe gestures — scrolling up to the top of the post (max 5 swipes), then scrolling down through the post and comments (max 6 swipes). After each swipe, it reads the accessibility tree to capture any text now visible on screen. A fingerprint hash confirms each swipe actually moved the page.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Can I summarize comments too?</summary>
+    <div class="faq-answer">
+      <p>Yes. The same capture pass collects both the post body and the comment section (up to the scroll cap). Tap <strong>Summarize comments</strong> on the card to generate a second AI summary focused on the discussion. No extra scrolling, no extra API call — Claude uses the already-captured text.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>What does the "partial content" warning mean?</summary>
+    <div class="faq-answer">
+      <p>If a post or thread is longer than about 6 screenfuls, the scroll cap is reached before the entire page is captured. The "partial content" banner on the summary card lets you know the summary may not cover everything.</p>
+    </div>
+  </details>
+
+  <details class="faq-section">
+    <summary>Why does setup say to toggle the Accessibility service after installing?</summary>
+    <div class="faq-answer">
+      <p>Android caches each accessibility service's declared capabilities on first enable. After a fresh install or update, toggling the service off and then on in Settings → Accessibility → RedditTLDR forces Android to read the latest capability list (including <code>canPerformGestures="true"</code>, which is required for scroll). Without this toggle, gesture dispatch silently fails.</p>
+    </div>
+  </details>
+
+</main>
+
+<footer>
+  <span>© 2026 Stanley Nwobosi · <a href="https://github.com/stanley-projects/RedditTLDR/blob/main/LICENSE">MIT License</a></span>
+  <span>
+    <a href="index.html">Home</a> ·
+    <a href="summarize-reddit-posts.html">Guide</a> ·
+    <a href="install.html">Install</a> ·
+    <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+  </span>
+</footer>
+
+</body>
+</html>

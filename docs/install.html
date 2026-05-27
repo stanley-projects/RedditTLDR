@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install RedditTLDR — Android APK Download &amp; Setup Guide</title>
+  <meta name="description" content="Download and install RedditTLDR on Android. Sideload the APK or build from source. Requires Android 8.0+, the official Reddit app, and an Anthropic API key.">
+  <meta name="keywords" content="install reddit summarizer android, download reddit tldr apk, reddit summary app android download, sideload reddit ai app, redditTLDR apk install">
+  <meta name="author" content="Stanley Nwobosi">
+  <meta name="theme-color" content="#19141C">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://stanley-projects.github.io/RedditTLDR/install.html">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://stanley-projects.github.io/RedditTLDR/install.html">
+  <meta property="og:title" content="Install RedditTLDR — Android APK Download &amp; Setup">
+  <meta property="og:description" content="Download RedditTLDR for Android and start summarizing Reddit posts with one tap, powered by Claude AI.">
+  <meta property="og:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+  <meta property="og:site_name" content="RedditTLDR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Install RedditTLDR — Android APK Download">
+  <meta name="twitter:description" content="Sideload the APK or build from source. Android 8.0+, official Reddit app, Anthropic API key.">
+  <meta name="twitter:image" content="https://stanley-projects.github.io/RedditTLDR/og-image.svg">
+
+  <!-- JSON-LD: Breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "RedditTLDR", "item": "https://stanley-projects.github.io/RedditTLDR/"},
+      {"@type": "ListItem", "position": 2, "name": "Install", "item": "https://stanley-projects.github.io/RedditTLDR/install.html"}
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #19141C; --surface: #2A2C32; --text: #F6F4F0;
+      --text-2: #D6D2C8; --text-3: #8B847A; --accent: #D4B26B;
+      --green: #6FB87A; --hairline: #3D3F47; --max: 760px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.7; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(25,20,28,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--hairline); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { font-size: 13px; color: var(--text-3); }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    main { max-width: var(--max); margin: 0 auto; padding: 64px 24px 80px; }
+    .breadcrumb { font-size: 12px; color: var(--text-3); margin-bottom: 32px; }
+    .breadcrumb a { color: var(--text-3); }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .eyebrow::before { content: ''; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; display: inline-block; }
+    h1 { font-family: Georgia, serif; font-size: clamp(28px, 5vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 16px; }
+    h2 { font-family: Georgia, serif; font-size: clamp(20px, 3vw, 24px); font-weight: 700; margin: 48px 0 16px; color: var(--text); }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    p { color: var(--text-2); margin-bottom: 16px; }
+    ul, ol { color: var(--text-2); padding-left: 24px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 13px; background: var(--surface); padding: 2px 6px; border-radius: 4px; color: var(--text-2); }
+    pre { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+    pre code { background: none; padding: 0; font-size: 13px; color: var(--text-2); }
+    .method-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 28px; margin-bottom: 16px; }
+    .method-card h2 { margin-top: 0; font-size: 20px; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--text); color: #1F2128; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 10px; transition: opacity 0.15s; margin-top: 8px; }
+    .btn-primary:hover { opacity: 0.88; text-decoration: none; }
+    .callout { background: rgba(212,178,107,0.08); border: 1px solid rgba(212,178,107,0.25); border-radius: 10px; padding: 16px 20px; margin: 24px 0; }
+    .callout strong { color: var(--accent); }
+    .callout p { font-size: 14px; color: var(--text-3); margin: 0; }
+    .req-row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+    .req-row:last-child { border-bottom: none; }
+    .req-label { width: 160px; flex-shrink: 0; font-size: 14px; font-weight: 500; color: var(--text); }
+    .req-val { font-size: 14px; color: var(--text-3); }
+    footer { border-top: 1px solid var(--hairline); padding: 32px 24px; max-width: 900px; margin: 0 auto; font-size: 13px; color: var(--text-3); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+    footer a { color: var(--text-3); }
+    footer a:hover { color: var(--text); text-decoration: none; }
+    @media (max-width: 600px) { .nav-links { display: none; } main { padding: 48px 20px 64px; } .req-row { flex-direction: column; gap: 4px; } .req-label { width: auto; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">Reddit<span>TLDR</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="summarize-reddit-posts.html">Guide</a>
+      <a href="faq.html">FAQ</a>
+      <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <nav aria-label="Breadcrumb" class="breadcrumb">
+    <a href="index.html">RedditTLDR</a> › Install
+  </nav>
+
+  <div class="eyebrow">Get the app</div>
+  <h1>Install RedditTLDR on Android</h1>
+  <p style="font-size:17px; color: var(--text-2);">
+    RedditTLDR is distributed as a debug APK (sideload). There are two ways to install:
+    sideload the prebuilt APK from GitHub Releases, or build it yourself from source.
+  </p>
+
+  <h2>Requirements</h2>
+  <div style="margin-top: 16px;">
+    <div class="req-row"><span class="req-label">Android version</span><span class="req-val">Android 8.0 (API level 26) or higher</span></div>
+    <div class="req-row"><span class="req-label">Reddit app</span><span class="req-val">Official Reddit app — <code>com.reddit.frontpage</code> from Google Play</span></div>
+    <div class="req-row"><span class="req-label">Anthropic API key</span><span class="req-val">Required. Get one at <a href="https://console.anthropic.com">console.anthropic.com</a>. Pay-per-use; Haiku 4.5 costs fractions of a cent per summary.</span></div>
+    <div class="req-row"><span class="req-label">Storage</span><span class="req-val">~10 MB for the APK</span></div>
+  </div>
+
+  <!-- Method A -->
+  <div class="method-card" style="margin-top: 48px;">
+    <div class="eyebrow" style="margin-bottom: 10px;">Recommended</div>
+    <h2>Option A — Sideload the APK</h2>
+    <p>The fastest way. Download the prebuilt APK and install it directly.</p>
+
+    <ol style="color: var(--text-2); margin-bottom: 20px;">
+      <li>On your Android device, open the <a href="https://github.com/stanley-projects/RedditTLDR/releases">GitHub Releases page</a></li>
+      <li>Download <strong>RedditTLDR-debug.apk</strong> to your device</li>
+      <li>Go to <strong>Settings → Apps → Special app access → Install unknown apps</strong>, and allow your browser or file manager to install unknown APKs</li>
+      <li>Open the downloaded APK file and tap <strong>Install</strong></li>
+      <li>Open RedditTLDR and follow the setup wizard</li>
+    </ol>
+
+    <a class="btn-primary" href="https://github.com/stanley-projects/RedditTLDR/releases">
+      ↓ Download from GitHub Releases
+    </a>
+  </div>
+
+  <!-- Method B -->
+  <div class="method-card">
+    <div class="eyebrow" style="margin-bottom: 10px;">For developers</div>
+    <h2>Option B — Build from source</h2>
+    <p>Clone the repo and build with Gradle. Requires Android Studio (for the JBR JDK).</p>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li><a href="https://developer.android.com/studio">Android Studio</a> (provides the required JBR JDK)</li>
+      <li>Android SDK (API 34)</li>
+      <li>Git</li>
+    </ul>
+
+    <h3>Build steps</h3>
+    <pre><code># Clone the repository
+git clone https://github.com/stanley-projects/RedditTLDR.git
+cd RedditTLDR
+
+# macOS / Linux / WSL
+JAVA_HOME="/path/to/Android Studio/jbr" ./gradlew assembleDebug
+
+# Windows (Git Bash)
+JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew assembleDebug</code></pre>
+
+    <p>The APK will be at: <code>app/build/outputs/apk/debug/app-debug.apk</code></p>
+
+    <div class="callout" style="margin-top: 20px;">
+      <strong>Gradle cache note:</strong>
+      <p>After a <code>git revert</code>, always pass <code>--no-build-cache</code> to force recompilation. Gradle's incremental cache can serve stale bytecode even when source is correct.</p>
+    </div>
+  </div>
+
+  <!-- Setup -->
+  <h2>After installation: 3-step setup</h2>
+
+  <div style="margin-top: 16px;">
+    <h3>1. Grant permissions</h3>
+    <p>Open RedditTLDR and tap each permission row to grant:</p>
+    <ul>
+      <li><strong>Accessibility service</strong> — reads post text from the Reddit app; only activates when Reddit is in the foreground</li>
+      <li><strong>Display over other apps</strong> — shows the floating bubble and summary card</li>
+      <li><strong>Notifications</strong> — required on Android 13+ to keep the foreground service alive</li>
+    </ul>
+
+    <div class="callout">
+      <strong>New install tip:</strong>
+      <p>After installing or updating RedditTLDR, toggle the Accessibility service <strong>off then on</strong> in Settings → Accessibility → RedditTLDR. Android caches the service capabilities on first enable; a toggle picks up any new ones.</p>
+    </div>
+
+    <h3>2. Add your Claude API key</h3>
+    <p>
+      Get an API key at <a href="https://console.anthropic.com">console.anthropic.com</a>. Paste it in the API Key field and tap Save. Tap Test to verify it connects successfully. Your key is encrypted on-device with AES-256-GCM and never leaves your device except when calling Anthropic's API.
+    </p>
+
+    <h3>3. Open Reddit and tap the bubble</h3>
+    <p>
+      Open the official Reddit app. The floating bubble appears automatically at the screen edge. Navigate to any post and tap the bubble. About 3 seconds later, a summary card appears over Reddit.
+    </p>
+  </div>
+
+  <p style="margin-top: 40px;">
+    Full step-by-step walkthrough → <a href="summarize-reddit-posts.html">How to summarize Reddit posts</a><br>
+    Common questions → <a href="faq.html">FAQ</a>
+  </p>
+</main>
+
+<footer>
+  <span>© 2026 Stanley Nwobosi · <a href="https://github.com/stanley-projects/RedditTLDR/blob/main/LICENSE">MIT License</a></span>
+  <span>
+    <a href="index.html">Home</a> ·
+    <a href="summarize-reddit-posts.html">Guide</a> ·
+    <a href="faq.html">FAQ</a> ·
+    <a href="https://github.com/stanley-projects/RedditTLDR">GitHub</a>
+  </span>
+</footer>
+
+</body>
+</html>
