@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you reference RedditTLDR in research or a project, please cite it as below."
+type: software
+title: "RedditTLDR"
+abstract: >
+  An Android app (API 26+) that overlays a draggable floating bubble on the
+  official Reddit app. Tapping the bubble captures the visible post via
+  AccessibilityService gesture-based scrolling and sends the text to the
+  Anthropic Claude API, displaying an AI-generated summary as an overlay card —
+  without leaving Reddit, without root access, and without a browser extension.
+authors:
+  - family-names: Nwobosi
+    given-names: Stanley
+    alias: stanley-projects
+    website: "https://github.com/stanley-projects"
+repository-code: "https://github.com/stanley-projects/RedditTLDR"
+url: "https://stanley-projects.github.io/RedditTLDR/"
+license: MIT
+version: "1.0"
+date-released: "2026-05-27"
+keywords:
+  - Android
+  - Reddit
+  - summarization
+  - AI summary
+  - Claude API
+  - Anthropic
+  - accessibility service
+  - overlay
+  - floating bubble
+  - no root
+  - productivity
+  - TL;DR
